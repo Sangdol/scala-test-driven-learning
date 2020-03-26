@@ -1,4 +1,4 @@
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 object CubeCalculator extends App {
   def cube(x: Int) = {
@@ -7,7 +7,7 @@ object CubeCalculator extends App {
 }
 
 // https://docs.scala-lang.org/getting-started/intellij-track/testing-scala-in-intellij-with-scalatest.html
-class SyntaxTest extends FunSuite {
+class SyntaxTest extends AnyFunSuite {
   test("CubeCalculator.cube") {
     assert(CubeCalculator.cube(3) === 27)
   }
