@@ -54,6 +54,11 @@ class SyntaxTest extends AnyFunSuite {
 
   }
 
+  test("Function call") {
+    assert("Abc".toLowerCase === "abc")
+    assert("Abc".toLowerCase() === "abc")
+  }
+
   test("Array") {
     assert((1 to 3) === Array(1, 2, 3))
   }
