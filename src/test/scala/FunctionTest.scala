@@ -67,7 +67,7 @@ class FunctionTest extends AnyFunSuite {
     assert(sum(1 to 3: _*) == 6)
 
     def recursiveSum(args: Int*): Int = {
-      if (args.length == 0) 0
+      if (args.isEmpty) 0
       else args.head + recursiveSum(args.tail: _*)
     }
 
