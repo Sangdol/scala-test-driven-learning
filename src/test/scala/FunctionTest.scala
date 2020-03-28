@@ -5,10 +5,12 @@ class FunctionTest extends AnyFunSuite {
   test("Anonymous function") {
     assert(((x: Int) => x * x) (3) === 9)
 
-    // underscore
-    assert((1 to 3).map(_ * 2) === Array(2, 4, 6)) // positional match
-    assert((1 to 3).reduceLeft(_ / _) === 0) // positional match
-    assert((1 to 3).map(x => x * x) === Array(1, 4, 9)) // no underscore possible in this case
+    // underscore (positional match)
+    assert((1 to 3).map(_ * 2) === Array(2, 4, 6))
+    assert((1 to 3).reduceLeft(_ / _) === 0)
+
+    // no underscore possible in this case
+    assert((1 to 3).map(x => x * x) === Array(1, 4, 9))
 
     // block style
     assert((1 to 3).map { x =>
@@ -16,7 +18,7 @@ class FunctionTest extends AnyFunSuite {
       y
     } === Array(2, 4, 6))
 
-    // pipeline style
+    // pipeline style (infix notation)
     val r = (1 to 3) filter {
       _ % 2 == 0
     } map {
@@ -30,6 +32,15 @@ class FunctionTest extends AnyFunSuite {
     } map {
       _ * 2
     }) === Array(4))
+  }
+
+  test("Parameter inference") {
+    def valueAtOneQuater(f: (Double) => Double) = f(0.25)
+
+    assert(valueAtOneQuater((x: Double) => x * 2) == 0.5)
+    assert(valueAtOneQuater((x) => x * 2) == 0.5)
+    assert(valueAtOneQuater(x => x * 2) == 0.5)
+    assert(valueAtOneQuater(_ * 2) == 0.5)
   }
 
   test("Function declaration") {
@@ -100,11 +111,46 @@ class FunctionTest extends AnyFunSuite {
     proc(10)
   }
 
+  test("Function as a value") {
+    // In Scala, you cannot manipulate methods, only functions.
+
+    // Package methods
+    // _ turns the ceil method into function
+    val fun = math.ceil _
+    assert(fun(1.1) == 2)
+
+    val explicitFun: (Double) => Double = math.ceil
+    assert(explicitFun(1.1) == 2)
+
+    // Class methods
+    val charAt = (_: String).charAt(_: Int)
+    assert(charAt("abc", 1) == 'b')
+
+    val charAt2: (String, Int) => Char = _.charAt(_)
+    assert(charAt2("abc", 1) == 'b')
+  }
+
   test("Closure") {
     def mulBy(factor: Double) = (x: Double) => factor * x
 
     val tens = mulBy(10)
     assert(tens(3) == 30)
+  }
+
+  test("Currying") {
+    // This is function.
+    val mulCurrying = (a: Int) => (b: Int) => a * b
+
+    assert(mulCurrying(2)(3) == 6)
+
+    // This is method. Why? It's just syntax.
+    def mulCurryingBetter(a: Int)(b: Int) = a * b
+
+    assert(mulCurryingBetter(2)(3) == 6)
+
+    val fun = mulCurryingBetter _
+
+    assert(fun(3)(4) == 12)
   }
 
 }
