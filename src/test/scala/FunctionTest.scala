@@ -100,4 +100,11 @@ class FunctionTest extends AnyFunSuite {
     proc(10)
   }
 
+  test("Closure") {
+    def mulBy(factor: Double) = (x: Double) => factor * x
+
+    val tens = mulBy(10)
+    assert(tens(3) == 30)
+  }
+
 }
