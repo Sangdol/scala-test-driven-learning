@@ -97,4 +97,17 @@ class ClassTest extends AnyFunSuite {
     assert(richAccount.balance == 100_000)
   }
 
+  // https://docs.scala-lang.org/tour/case-classes.html
+  test("Case Class") {
+    case class Book(isbn: String)
+
+    val b1 = Book("1")
+    assert(b1.isbn == "1")
+
+    val b2 = Book("1")
+    assert(b1 == b2)
+
+    val b3 = b2.copy(isbn = "2")
+    assert(b3.isbn == "2")
+  }
 }
