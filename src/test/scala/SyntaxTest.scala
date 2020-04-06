@@ -149,4 +149,27 @@ class SyntaxTest extends AnyFunSuite {
     assert(vector.isInstanceOf[Vector[Char]])
     assert(vector.size == 10)
   }
+
+  // https://docs.scala-lang.org/tour/pattern-matching.html
+  test("Case") {
+    def matchTest(n: Int): String = n match {
+      case 1 => "one"
+      case 2 => "two"
+      case _ => "other"
+    }
+
+    assert(matchTest(1) == "one")
+    assert(matchTest(2) == "two")
+    assert(matchTest(3) == "other")
+
+    // Pattern guard: if ...
+    def matchTestWithPatternGuard(n: Int, flag: Boolean): String = n match {
+      case 1 if flag => "one"
+      case 2 if flag => "two"
+      case _ => "other"
+    }
+
+    assert(matchTestWithPatternGuard(1, flag = true) == "one")
+    assert(matchTestWithPatternGuard(1, flag = false) == "other")
+  }
 }
