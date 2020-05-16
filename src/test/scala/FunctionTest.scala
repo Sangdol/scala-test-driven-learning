@@ -145,7 +145,23 @@ class FunctionTest extends AnyFunSuite {
     def add2: (Int) => Int = (n) => n + 2
     val f2 = add2
 
-    assert(f(1) == 3)
+    assert(f2(1) == 3)
+
+    // multiline method
+    def add3(n: Int): Int = {
+      n + 3
+    }
+
+    val f3 = add3 _
+    assert(f3(1) == 4)
+
+    // multiline function
+    def add4: (Int) => Int = (n) => {
+      n + 4
+    }
+
+    val f4 = add4
+    assert(f4(1) == 5)
   }
 
   test("Closure") {

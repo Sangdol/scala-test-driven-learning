@@ -109,5 +109,15 @@ class ClassTest extends AnyFunSuite {
 
     val b3 = b2.copy(isbn = "2")
     assert(b3.isbn == "2")
+
+    def bookGenerator: (String) => Book = (isbn) => Book(f"isbn: $isbn")
+
+    assert(bookGenerator("123").isbn == "isbn: 123")
+
+    def bookGenerator2(isbn: String): Book = {
+      Book(f"ISBN: $isbn")
+    }
+
+    assert(bookGenerator2("111").isbn == "ISBN: 111")
   }
 }
