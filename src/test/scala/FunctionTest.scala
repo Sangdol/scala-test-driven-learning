@@ -130,6 +130,24 @@ class FunctionTest extends AnyFunSuite {
     assert(charAt2("abc", 1) == 'b')
   }
 
+  test("Methods are not functions") {
+    // This is a method. A method is not a value.
+    // So you cannot assign this to a variable.
+    def add1(n: Int): Int = n + 1
+
+    // You need to put '_' to make it function
+    val f = add1 _
+
+    assert(f(1) == 2)
+
+    // As this is a function you can assign it to a variable right away.
+    // Why is it designed like this?
+    def add2: (Int) => Int = (n) => n + 2
+    val f2 = add2
+
+    assert(f(1) == 3)
+  }
+
   test("Closure") {
     def mulBy(factor: Double) = (x: Double) => factor * x
 
