@@ -66,6 +66,7 @@ class ClassTest extends AnyFunSuite {
 
   test("Object") {
     // Companion object of Accounts class
+    // Singleton
     object Account {
       private var lastNumber = 0
 
