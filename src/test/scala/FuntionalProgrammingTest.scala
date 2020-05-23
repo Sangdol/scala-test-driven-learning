@@ -45,11 +45,9 @@ class FuntionalProgrammingTest extends AnyFunSuite {
     def fib2(n: Int): Int = {
 
       @annotation.tailrec
-      def go(n: Int, curr: Int, next: Int): Int = {
+      def go(n: Int, curr: Int, next: Int): Int =
         if (n == 0) curr
-        else if (n == 1) next
         else go(n-1, next, curr+next)
-      }
 
       go(n, 0, 1)
     }
