@@ -78,7 +78,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
 
   test("partial") {
     def partial1[A,B,C](a: A, f: (A, B) => C): (B) => C =
-      (b: B) => f(a, b)
+      b => f(a, b)
 
     def add5 = partial1(5, math.addExact)
 
@@ -88,7 +88,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
   test("currying") {
     // exercise 2.3
     def curry[A,B,C](f: (A, B) => C): A => (B => C) =
-      (a: A) => ((b: B) => f(a, b))
+      a => b => f(a, b)
 
     def addCurry = curry(math.addExact)
     def add5 = addCurry(5)
