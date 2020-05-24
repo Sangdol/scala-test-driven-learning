@@ -60,4 +60,39 @@ class FuntionalProgrammingTest extends AnyFunSuite {
     assert(fib2(5) == 5)
   }
 
+  test("isSorted") {
+    // exercise 2.2
+    def isSorted[A](as: Array[A], ordered: (A, A) => Boolean): Boolean = {
+
+      @annotation.tailrec
+      def loop(n: Int): Boolean =
+        if (n+1 >= as.length) true
+        else if (!ordered(as(n), as(n+1))) false
+        else loop(n+1)
+
+      loop(0)
+    }
+
+    assert(isSorted(Array(1, 2, 3), (a:Int, b:Int) => a < b))
+  }
+
+  test("partial") {
+    def partial1[A,B,C](a: A, f: (A, B) => C): (B) => C =
+      (b: B) => f(a, b)
+
+    def add5 = partial1(5, math.addExact)
+
+    assert(add5(3) == 8)
+  }
+
+  test("currying") {
+    // exercise 2.3
+    def curry[A,B,C](f: (A, B) => C): A => (B => C) =
+      (a: A) => ((b: B) => f(a, b))
+
+    def addCurry = curry(math.addExact)
+    def add5 = addCurry(5)
+
+    assert(add5(3) == 8)
+  }
 }
