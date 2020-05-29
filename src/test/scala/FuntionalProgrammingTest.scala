@@ -80,7 +80,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
     def partial1[A,B,C](a: A, f: (A, B) => C): (B) => C =
       b => f(a, b)
 
-    def add5 = partial1(5, math.addExact)
+    val add5 = partial1(5, math.addExact)
 
     assert(add5(3) == 8)
   }
@@ -90,9 +90,33 @@ class FuntionalProgrammingTest extends AnyFunSuite {
     def curry[A,B,C](f: (A, B) => C): A => (B => C) =
       a => b => f(a, b)
 
-    def addCurry = curry(math.addExact)
-    def add5 = addCurry(5)
+    // why I can pass a method here?
+    val addCurry = curry(math.addExact)
+    val add5 = addCurry(5)
 
     assert(add5(3) == 8)
+
+    // exercise 2.4
+    def uncurry[A,B,C](f: A => B => C): (A, B) => C =
+      (a, b) => f(a)(b)
+
+    val addUncurry = uncurry(curry(math.addExact))
+
+    assert(addUncurry(1, 2) == 3)
+
+    val addUncurry2 = uncurry(addCurry)
+
+    assert(addUncurry2(1, 2) == 3)
   }
+
+  test("compose") {
+    // exercise 2.5
+    def compose[A,B,C](f: B => C, g: A => B): A => C =
+      (a) => f(g(a))
+
+    val plusPow = compose((x: Int) => math.pow(x, 2), (x: Int) => x + 2)
+
+    assert(plusPow(2) == 16)
+  }
+
 }
