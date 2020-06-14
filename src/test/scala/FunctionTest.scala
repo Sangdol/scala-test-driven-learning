@@ -142,10 +142,18 @@ class FunctionTest extends AnyFunSuite {
 
     // As this is a function you can assign it to a variable right away.
     // Why is it designed like this?
+    // --> This is a method that has a static value which is a function
+    //     This method need to be called without ().
+    //     https://docs.scala-lang.org/tour/basics.html#methods
     def add2: (Int) => Int = (n) => n + 2
     val f2 = add2
-
     assert(f2(1) == 3)
+
+    // This is a normal way to define a function.
+    val add2_1: (Int) => Int = (n) => n + 2
+    val f2_1 = add2_1
+
+    assert(f2_1(1) == 3)
 
     // multiline method
     def add3(n: Int): Int = {
@@ -156,7 +164,7 @@ class FunctionTest extends AnyFunSuite {
     assert(f3(1) == 4)
 
     // multiline function
-    def add4: (Int) => Int = (n) => {
+    val add4: (Int) => Int = (n) => {
       n + 4
     }
 
