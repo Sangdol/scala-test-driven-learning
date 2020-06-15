@@ -4,7 +4,7 @@
 
 import org.scalatest.funsuite.AnyFunSuite
 
-class FuntionalProgrammingTest extends AnyFunSuite {
+class FunctionalProgrammingTest extends AnyFunSuite {
 
   test("@tailrec") {
     def factorial(n: Int): Int = {
@@ -61,6 +61,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
   }
 
   test("isSorted") {
+
     // exercise 2.2
     def isSorted[A](as: Array[A], ordered: (A, A) => Boolean): Boolean = {
 
@@ -77,7 +78,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
   }
 
   test("partial") {
-    def partial1[A,B,C](a: A, f: (A, B) => C): (B) => C =
+    def partial1[A,B,C](a: A, f: (A, B) => C): B => C =
       b => f(a, b)
 
     val add5 = partial1(5, math.addExact)
@@ -87,7 +88,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
 
   test("currying") {
     // exercise 2.3
-    def curry[A,B,C](f: (A, B) => C): A => (B => C) =
+    def curry[A,B,C](f: (A, B) => C): A => B => C =
       a => b => f(a, b)
 
     // why I can pass a method here?
@@ -112,7 +113,7 @@ class FuntionalProgrammingTest extends AnyFunSuite {
   test("compose") {
     // exercise 2.5
     def compose[A,B,C](f: B => C, g: A => B): A => C =
-      (a) => f(g(a))
+      a => f(g(a))
 
     val plusPow = compose((x: Int) => math.pow(x, 2), (x: Int) => x + 2)
 
