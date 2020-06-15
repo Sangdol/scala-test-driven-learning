@@ -4,6 +4,11 @@ import scala.collection.immutable.Range.Inclusive
 
 class CollectionTest extends AnyFunSuite {
 
+  test("List") {
+    assert(List(1, 2).head == 1)
+    assert(List(1, 2)(1) == 2)
+  }
+
   test("Range") {
     val range = 1 to 5
 
