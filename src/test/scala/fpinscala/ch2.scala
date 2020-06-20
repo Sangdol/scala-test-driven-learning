@@ -1,10 +1,12 @@
+package fpinscala
+
 /**
  * Functional Programming in Scala
  */
 
 import org.scalatest.funsuite.AnyFunSuite
 
-class FunctionalProgrammingTest extends AnyFunSuite {
+class ch2 extends AnyFunSuite {
 
   test("@tailrec") {
     def factorial(n: Int): Int = {
@@ -92,6 +94,7 @@ class FunctionalProgrammingTest extends AnyFunSuite {
       a => b => f(a, b)
 
     // why I can pass a method here?
+    // -> math.addExtract is a package level function
     val addCurry = curry(math.addExact)
     val add5 = addCurry(5)
 
