@@ -6,8 +6,8 @@ package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
 
-sealed trait MyList[+A]
-case object Nil extends MyList[Nothing]
+sealed trait MyList[+A] // abstract class
+case object Nil extends MyList[Nothing] // singleton class
 case class Cons[+B](head: B, tail: MyList[B]) extends MyList[B]
 
 object MyList {
@@ -25,11 +25,12 @@ object MyList {
 
   def apply[A](as: A*): MyList[A] =
     if (as.isEmpty) Nil
-    else Cons(as.head, apply(as.tail: _*))
+    else Cons(as.head, apply(as.tail: _*)) // _*: spread
 
 }
 
 class ch3 extends AnyFunSuite {
+
   test("3.1") {
     val x = MyList(1,2,3,4,5) match {
       case Cons(x, Cons(2, Cons(4, _))) => x
