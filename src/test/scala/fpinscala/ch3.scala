@@ -29,6 +29,16 @@ object MyList {
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*)) // _*: spread
 
+  def tail[A](list: MyList[A]): MyList[A] = list match {
+    case Nil => sys.error("no more element")
+    case Cons(_, xs) => xs
+  }
+
+  def setHead[A](list: MyList[A], element: A): MyList[A] = list match {
+    case Nil => Cons(element, Nil)
+    case Cons(_, xs) => Cons(element, xs)
+  }
+
 }
 
 class ch3 extends AnyFunSuite {
@@ -51,4 +61,12 @@ class ch3 extends AnyFunSuite {
     assert(matchTest(MyList(2,3,4,4,5,6)) == 24) // 4
   }
 
+  test("3.2") {
+    assert(MyList.tail(MyList(1,2,3)) == MyList(2,3))
+  }
+
+  test("3.3") {
+    assert(MyList.setHead(MyList(1,2), 3) == MyList(3,2))
+    assert(MyList.setHead(Nil, 3) == MyList(3))
+  }
 }
