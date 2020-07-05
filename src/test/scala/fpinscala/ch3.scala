@@ -23,6 +23,8 @@ object MyList {
     case Cons(x, xs) => x * product(xs)
   }
 
+  // variadic function: it takes 0 or more arguments of type A (Seq)
+  // https://www.scala-lang.org/api/current/scala/collection/immutable/Seq.html
   def apply[A](as: A*): MyList[A] =
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*)) // _*: spread
@@ -32,14 +34,6 @@ object MyList {
 class ch3 extends AnyFunSuite {
 
   test("3.1") {
-    val x = MyList(1,2,3,4,5) match {
-      case Cons(x, Cons(2, Cons(4, _))) => x
-      case Nil => 42
-      case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y
-      case Cons(h, t) => h + MyList.sum(t)
-      case _ => 101
-    }
-
     def matchTest(list: MyList[Int]): Int =
       list match {
         case Cons(x, Cons(2, Cons(4, _))) => x // 1
@@ -54,6 +48,7 @@ class ch3 extends AnyFunSuite {
     assert(matchTest(MyList()) == 42) // 2
     assert(matchTest(MyList(1,2,3,4,5)) == 3) // 3
     assert(matchTest(MyList(2,3,4,4,5)) == 18) // 4
+    assert(matchTest(MyList(2,3,4,4,5,6)) == 24) // 4
   }
 
 }

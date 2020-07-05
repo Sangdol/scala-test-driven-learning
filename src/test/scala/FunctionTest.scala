@@ -194,5 +194,4 @@ class FunctionTest extends AnyFunSuite {
 
     assert(fun(3)(4) == 12)
   }
-
 }
