@@ -34,6 +34,19 @@ object MyList {
     case Cons(_, xs) => xs
   }
 
+  def drop[A](list: MyList[A], n: Int): MyList[A] = list match {
+    case list if n <= 0 => list  // guard
+    case Nil => sys.error("no more element")
+    case Cons(x, xs) => drop(xs, n-1)
+  }
+
+  def dropFromBook[A](l: MyList[A], n: Int): MyList[A] =
+    if (n <= 0) l
+    else l match {
+      case Nil => Nil
+      case Cons(_,t) => drop(t, n-1)
+    }
+
   def setHead[A](list: MyList[A], element: A): MyList[A] = list match {
     case Nil => Cons(element, Nil)
     case Cons(_, xs) => Cons(element, xs)
@@ -68,5 +81,10 @@ class ch3 extends AnyFunSuite {
   test("3.3") {
     assert(MyList.setHead(MyList(1,2), 3) == MyList(3,2))
     assert(MyList.setHead(Nil, 3) == MyList(3))
+  }
+
+  test("3.4") {
+    assert(MyList.drop(MyList(1,2,3), 2) == MyList(3))
+    assert(MyList.drop(MyList(1), -1) == MyList(1))
   }
 }
