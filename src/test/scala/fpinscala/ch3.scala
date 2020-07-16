@@ -78,6 +78,18 @@ object List {
     case Cons(_, xs) => Cons(element, xs)
   }
 
+  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B =
+    as match {
+      case Nil => z
+      case Cons(h, t) => f(h, foldRight(t, z)(f))
+    }
+
+  def sum2(as: List[Int]): Int =
+    foldRight(as, 0)(_ + _)
+
+  def multiply2(as: List[Double]): Double =
+    foldRight(as, 1.0)(_ * _)
+
 }
 
 class ch3 extends AnyFunSuite {
@@ -121,5 +133,10 @@ class ch3 extends AnyFunSuite {
 
   test("3.6") {
     assert(List.init(List(1,2,3)) == List(1,2))
+  }
+
+  test("foldRight") {
+    assert(List.sum2(List(1, 2)) == 3)
+    assert(List.multiply2(List(2, 3)) == 6)
   }
 }
