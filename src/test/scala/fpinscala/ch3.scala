@@ -55,6 +55,18 @@ object List {
     case _ => list
   }
 
+  /**
+   * 3.3.2 Type information flows from left to right => no need a type annotation for f.
+   *
+   * This cannot have the same name
+   * -> ... have same type after erasure: (list: fpinscala.List, f: Function1)
+   */
+  @scala.annotation.tailrec
+  def dropWhile2[A](as: List[A])(f: A => Boolean): List[A] = as match {
+    case Cons(h, t) if (f(h)) => dropWhile2(t)(f)
+    case _ => as
+  }
+
   def init[A](list: List[A]): List[A] = list match {
     case Nil => Nil
     case Cons(_, Nil) => Nil
@@ -104,6 +116,7 @@ class ch3 extends AnyFunSuite {
 
   test("3.5") {
     assert(List.dropWhile(List(1,2,3), (x: Int) => x < 3) == List(3))
+    assert(List.dropWhile2(List(1,2,3))(x => x < 3) == List(3))
   }
 
   test("3.6") {
