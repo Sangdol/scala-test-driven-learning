@@ -34,18 +34,26 @@ object MyList {
     case Cons(_, xs) => xs
   }
 
+  @scala.annotation.tailrec
   def drop[A](list: MyList[A], n: Int): MyList[A] = list match {
-    case list if n <= 0 => list  // guard
-    case Nil => sys.error("no more element")
+    case list if n <= 0 => list  // pattern guard
+    case Nil => Nil
     case Cons(x, xs) => drop(xs, n-1)
   }
 
+  @scala.annotation.tailrec
   def dropFromBook[A](l: MyList[A], n: Int): MyList[A] =
     if (n <= 0) l
     else l match {
       case Nil => Nil
-      case Cons(_,t) => drop(t, n-1)
+      case Cons(_,t) => dropFromBook(t, n-1)
     }
+
+  @scala.annotation.tailrec
+  def dropWhile[A](list: MyList[A], f: A => Boolean): MyList[A] = list match {
+    case Cons(x, xs) if (f(x)) => dropWhile(xs, f)
+    case _ => list
+  }
 
   def setHead[A](list: MyList[A], element: A): MyList[A] = list match {
     case Nil => Cons(element, Nil)
@@ -86,5 +94,9 @@ class ch3 extends AnyFunSuite {
   test("3.4") {
     assert(MyList.drop(MyList(1,2,3), 2) == MyList(3))
     assert(MyList.drop(MyList(1), -1) == MyList(1))
+  }
+
+  test("3.5") {
+    assert(MyList.dropWhile(MyList(1,2,3), (x: Int) => x < 3) == MyList(3))
   }
 }
