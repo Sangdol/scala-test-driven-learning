@@ -51,7 +51,7 @@ object List {
 
   @scala.annotation.tailrec
   def dropWhile[A](list: List[A], f: A => Boolean): List[A] = list match {
-    case Cons(x, xs) if (f(x)) => dropWhile(xs, f)
+    case Cons(x, xs) if f(x) => dropWhile(xs, f)
     case _ => list
   }
 
@@ -63,7 +63,7 @@ object List {
    */
   @scala.annotation.tailrec
   def dropWhile2[A](as: List[A])(f: A => Boolean): List[A] = as match {
-    case Cons(h, t) if (f(h)) => dropWhile2(t)(f)
+    case Cons(h, t) if f(h) => dropWhile2(t)(f)
     case _ => as
   }
 
@@ -128,7 +128,7 @@ class ch3 extends AnyFunSuite {
 
   test("3.5") {
     assert(List.dropWhile(List(1,2,3), (x: Int) => x < 3) == List(3))
-    assert(List.dropWhile2(List(1,2,3))(x => x < 3) == List(3))
+    assert(List.dropWhile2(List(1,2,3))(_ < 3) == List(3))
   }
 
   test("3.6") {
@@ -138,5 +138,6 @@ class ch3 extends AnyFunSuite {
   test("foldRight") {
     assert(List.sum2(List(1, 2)) == 3)
     assert(List.multiply2(List(2, 3)) == 6)
+    assert(List.foldRight(List(1,2,3), Nil: List[Int])(Cons(_, _)) == List(1,2,3))
   }
 }
