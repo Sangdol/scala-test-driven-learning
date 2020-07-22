@@ -87,7 +87,7 @@ object List {
   def sum2(as: List[Int]): Int =
     foldRight(as, 0)(_ + _)
 
-  def multiply2(as: List[Double]): Double =
+  def product2(as: List[Double]): Double =
     foldRight(as, 1.0)(_ * _)
 
 }
@@ -137,7 +137,7 @@ class ch3 extends AnyFunSuite {
 
   test("foldRight") {
     assert(List.sum2(List(1, 2)) == 3)
-    assert(List.multiply2(List(2, 3)) == 6)
+    assert(List.product2(List(2, 3)) == 6)
     assert(List.foldRight(List(1,2,3), Nil: List[Int])(Cons(_, _)) == List(1,2,3))
   }
 }
