@@ -125,6 +125,9 @@ object List {
 
   def append2[A](l: List[A], r: List[A]): List[A] =
     foldRight(l, r)(Cons(_, _))
+
+  def flat[A](as: List[List[A]]): List[A] =
+    foldRight(as, Nil: List[A])(append2)
 }
 
 class ch3 extends AnyFunSuite {
@@ -229,5 +232,9 @@ class ch3 extends AnyFunSuite {
   test("3.14") {
     assert(List.append(List(1), 2) == List(1,2))
     assert(List.append2(List(1), List(2)) == List(1,2))
+  }
+
+  test("3.15") {
+    assert(List.flat(List(List(1),List(2))) == List(1,2))
   }
 }
