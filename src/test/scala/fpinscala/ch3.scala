@@ -94,6 +94,16 @@ object List {
 
 class ch3 extends AnyFunSuite {
 
+  test("Cons") {
+    val c = Cons(1, List(2,3))
+
+    assert(c.head == 1)
+    assert(c.tail == List(2,3))
+
+    assert(Cons(1, Nil) == List(1))
+    assert(Cons(1, Cons(2, Nil)) == List(1, 2))
+  }
+
   test("3.1") {
     def matchTest(list: List[Int]): Int =
       list match {
@@ -138,6 +148,18 @@ class ch3 extends AnyFunSuite {
   test("foldRight") {
     assert(List.sum2(List(1, 2)) == 3)
     assert(List.product2(List(2, 3)) == 6)
-    assert(List.foldRight(List(1,2,3), Nil: List[Int])(Cons(_, _)) == List(1,2,3))
   }
+
+  test("3.8") {
+    // "Nil: List[Int]" is needed to prevent Scala from inferring it as List[Nothing]
+    assert(List.foldRight(List(1, 2, 3), Nil: List[Int])(Cons(_, _)) == List(1, 2, 3))
+
+    val a = Nil
+    val b = Nil: List[Nothing]
+    val c = Nil: List[Int]
+
+    assert(a == b)
+    assert(a == c)
+  }
+
 }
