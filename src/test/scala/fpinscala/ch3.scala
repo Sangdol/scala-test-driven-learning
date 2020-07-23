@@ -107,6 +107,9 @@ object List {
 
   def length2[A](as: List[A]): Int =
     foldLeft(as, 0)((x, _) => 1 + x)
+
+  def reverse[A](as: List[A]): List[A] =
+    foldLeft(as, Nil: List[A])((x, y) => Cons(y, x))
 }
 
 class ch3 extends AnyFunSuite {
@@ -196,6 +199,10 @@ class ch3 extends AnyFunSuite {
     assert(List.sum3(List(1,2,3)) == 6)
     assert(List.product3(List(1,2,3,4)) == 24)
     assert(List.length2(List(1,2,3)) ==3)
+  }
+
+  test("3.12") {
+    assert(List.reverse(List(1,2,3)) == List(3,2,1))
   }
 
 }
