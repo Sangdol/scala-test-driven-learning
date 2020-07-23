@@ -131,6 +131,9 @@ object List {
 
   def add1(as: List[Int]): List[Int] =
     foldRight(as, Nil: List[Int])((h, t) => Cons((h+1), t))
+
+  def toString(as: List[Double]): List[String] =
+    foldRight(as, Nil: List[String])((h, t) => Cons(h.toString, t))
 }
 
 class ch3 extends AnyFunSuite {
@@ -243,5 +246,9 @@ class ch3 extends AnyFunSuite {
 
   test("3.16") {
     assert(List.add1(List(1,2,3)) == List(2,3,4))
+  }
+
+  test("3.17") {
+    assert(List.toString(List(1.0,2.0)) == List("1.0", "2.0"))
   }
 }
