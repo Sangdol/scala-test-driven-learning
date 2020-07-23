@@ -90,6 +90,8 @@ object List {
   def product2(as: List[Double]): Double =
     foldRight(as, 1.0)(_ * _)
 
+  def length[A](as: List[A]): Int =
+    foldRight(as, 0)((_, x) => 1 + x)
 }
 
 class ch3 extends AnyFunSuite {
@@ -160,6 +162,12 @@ class ch3 extends AnyFunSuite {
 
     assert(a == b)
     assert(a == c)
+  }
+
+  test("3.9") {
+    assert(List.length(Nil) == 0)
+    assert(List.length(List()) == 0)
+    assert(List.length(List(1,2,3)) == 3)
   }
 
 }
