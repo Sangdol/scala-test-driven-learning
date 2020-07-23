@@ -128,6 +128,9 @@ object List {
 
   def concat[A](as: List[List[A]]): List[A] =
     foldRight(as, Nil: List[A])(append2)
+
+  def add1(as: List[Int]): List[Int] =
+    foldRight(as, Nil: List[Int])((h, t) => Cons((h+1), t))
 }
 
 class ch3 extends AnyFunSuite {
@@ -236,5 +239,9 @@ class ch3 extends AnyFunSuite {
 
   test("3.15") {
     assert(List.concat(List(List(1),List(2))) == List(1,2))
+  }
+
+  test("3.16") {
+    assert(List.add1(List(1,2,3)) == List(2,3,4))
   }
 }
