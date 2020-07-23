@@ -84,6 +84,12 @@ object List {
       case Cons(h, t) => f(h, foldRight(t, z)(f))
     }
 
+  def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B =
+    as match {
+      case Nil => z
+      case Cons(h, t) => foldLeft(t, f(z, h))(f)
+    }
+
   def sum2(as: List[Int]): Int =
     foldRight(as, 0)(_ + _)
 
@@ -92,6 +98,15 @@ object List {
 
   def length[A](as: List[A]): Int =
     foldRight(as, 0)((_, x) => 1 + x)
+
+  def sum3(as: List[Int]): Int =
+    foldLeft(as, 0)(_ + _)
+
+  def product3(as: List[Double]): Double =
+    foldLeft(as, 1.0)(_ * _)
+
+  def length2[A](as: List[A]): Int =
+    foldLeft(as, 0)((x, _) => 1 + x)
 }
 
 class ch3 extends AnyFunSuite {
@@ -154,6 +169,7 @@ class ch3 extends AnyFunSuite {
 
   test("3.8") {
     // "Nil: List[Int]" is needed to prevent Scala from inferring it as List[Nothing]
+    // The last element is Consed first.
     assert(List.foldRight(List(1, 2, 3), Nil: List[Int])(Cons(_, _)) == List(1, 2, 3))
 
     val a = Nil
@@ -168,6 +184,18 @@ class ch3 extends AnyFunSuite {
     assert(List.length(Nil) == 0)
     assert(List.length(List()) == 0)
     assert(List.length(List(1,2,3)) == 3)
+  }
+
+  test("3.10") {
+    // The head is added first
+    assert(List.foldLeft(List(1,2,3), 0)(_ + _) == 6)
+    assert(List.foldLeft(List(1,2,3), Nil: List[Int])((x, y) => Cons(y, x)) == List(3, 2, 1))
+  }
+
+  test("3.11") {
+    assert(List.sum3(List(1,2,3)) == 6)
+    assert(List.product3(List(1,2,3,4)) == 24)
+    assert(List.length2(List(1,2,3)) ==3)
   }
 
 }
