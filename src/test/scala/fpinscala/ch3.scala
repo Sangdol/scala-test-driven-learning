@@ -84,11 +84,20 @@ object List {
       case Cons(h, t) => f(h, foldRight(t, z)(f))
     }
 
+  def foldRight2[A, B](as: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(as), z)((x, y) => f(y, x))
+
+  def foldRight3[A, B](as: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(as, (b: B) => b)((g, a) => b => g(f(a, b)))(z)
+
   def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B =
     as match {
       case Nil => z
       case Cons(h, t) => foldLeft(t, f(z, h))(f)
     }
+
+  def foldLeft2[A, B](as: List[A], z: B)(f: (B, A) => B): B =
+    foldRight(reverse(as), z)((x, y) => f(y, x))
 
   def sum2(as: List[Int]): Int =
     foldRight(as, 0)(_ + _)
@@ -203,6 +212,12 @@ class ch3 extends AnyFunSuite {
 
   test("3.12") {
     assert(List.reverse(List(1,2,3)) == List(3,2,1))
+  }
+
+  test("3.13") {
+    assert(List.foldRight2(List(1,2,3), Nil: List[Int])(Cons(_, _)) == List(1,2,3))
+    assert(List.foldLeft2(List(1,2,3), Nil: List[Int])((x, y) => Cons(y, x)) == List(3,2,1))
+    assert(List.foldRight3(List(1,2,3), Nil: List[Int])(Cons(_, _)) == List(1,2,3))
   }
 
 }
