@@ -119,6 +119,12 @@ object List {
 
   def reverse[A](as: List[A]): List[A] =
     foldLeft(as, Nil: List[A])((x, y) => Cons(y, x))
+
+  def append[A](as: List[A], x: A): List[A] =
+    foldRight(as, List(x))(Cons(_, _))
+
+  def append2[A](l: List[A], r: List[A]): List[A] =
+    foldRight(l, r)(Cons(_, _))
 }
 
 class ch3 extends AnyFunSuite {
@@ -220,4 +226,8 @@ class ch3 extends AnyFunSuite {
     assert(List.foldRight3(List(1,2,3), Nil: List[Int])(Cons(_, _)) == List(1,2,3))
   }
 
+  test("3.14") {
+    assert(List.append(List(1), 2) == List(1,2))
+    assert(List.append2(List(1), List(2)) == List(1,2))
+  }
 }
