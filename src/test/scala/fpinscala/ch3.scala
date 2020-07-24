@@ -90,6 +90,7 @@ object List {
   def foldRight3[A, B](as: List[A], z: B)(f: (A, B) => B): B =
     foldLeft(as, (b: B) => b)((g, a) => b => g(f(a, b)))(z)
 
+  @scala.annotation.tailrec
   def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B =
     as match {
       case Nil => z
@@ -115,7 +116,7 @@ object List {
     foldLeft(as, 1.0)(_ * _)
 
   def length2[A](as: List[A]): Int =
-    foldLeft(as, 0)((x, _) => 1 + x)
+    foldLeft(as, 0)((acc, _) => 1 + acc)
 
   def reverse[A](as: List[A]): List[A] =
     foldLeft(as, Nil: List[A])((x, y) => Cons(y, x))
@@ -134,6 +135,9 @@ object List {
 
   def toString(as: List[Double]): List[String] =
     foldRight(as, Nil: List[String])((h, t) => Cons(h.toString, t))
+
+  def map[A, B](as: List[A])(f: A => B): List[B] =
+    foldRight(as, Nil: List[B])((h, t) => Cons(f(h), t))
 }
 
 class ch3 extends AnyFunSuite {
@@ -250,5 +254,9 @@ class ch3 extends AnyFunSuite {
 
   test("3.17") {
     assert(List.toString(List(1.0,2.0)) == List("1.0", "2.0"))
+  }
+
+  test("3.18") {
+    assert(List.map(List(1, 2))(_ * 3) == List(3, 6))
   }
 }
