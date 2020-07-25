@@ -7,6 +7,19 @@ class CollectionTest extends AnyFunSuite {
   test("List") {
     assert(List(1, 2).head == 1)
     assert(List(1, 2)(1) == 2)
+
+    assert(List(1).::(2) == List(2,1))
+
+    assert(List(1,2).forall(_ > 0))
+    assert(!List(1,2).forall(_ > 1))
+    assert(List(1,2).exists(_ > 1))
+    assert(List(1,2,3).scanLeft(0)(_ + _) == List(0,1,3,6))
+
+    // 0
+    // 3,0
+    // 5,3,0
+    // 6,5,3,0
+    assert(List(1,2,3).scanRight(0)(_ + _) == List(6,5,3,0))
   }
 
   test("Range") {
