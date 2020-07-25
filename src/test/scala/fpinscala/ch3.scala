@@ -6,6 +6,8 @@ package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.collection.immutable
+
 sealed trait List[+A] // abstract class
 case object Nil extends List[Nothing] // singleton class
 case class Cons[+B](head: B, tail: List[B]) extends List[B]
@@ -190,6 +192,12 @@ object List {
       }
     }
 
+  def zipWith[A, B](l: List[A], r: List[A])(f: (A, A) => B): List[B] =
+    (l, r) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
+    }
 }
 
 class ch3 extends AnyFunSuite {
@@ -334,5 +342,10 @@ class ch3 extends AnyFunSuite {
 
     assert(List.add3(List(1,2,3), List(1,2,3)) == List(2,4,6))
     assert(List.add3(List(1,2), List(1,2,3)) == List(2,4))
+  }
+
+  test("3.23") {
+    assert(List.zipWith(List(1,2), List(1,2))(_ + _) == List(2,4))
+    assert(List.zipWith(List(1,2), List(1,2))(_ * _) == List(1,4))
   }
 }
