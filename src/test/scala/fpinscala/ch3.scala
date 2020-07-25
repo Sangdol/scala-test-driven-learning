@@ -6,8 +6,6 @@ package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
 
-import scala.collection.immutable
-
 sealed trait List[+A] // abstract class
 case object Nil extends List[Nothing] // singleton class
 case class Cons[+B](head: B, tail: List[B]) extends List[B]
@@ -40,7 +38,7 @@ object List {
   def drop[A](list: List[A], n: Int): List[A] = list match {
     case list if n <= 0 => list  // pattern guard
     case Nil => Nil
-    case Cons(x, xs) => drop(xs, n-1)
+    case Cons(_, xs) => drop(xs, n-1)
   }
 
   @scala.annotation.tailrec
@@ -133,7 +131,7 @@ object List {
     foldRight(as, Nil: List[A])(append2)
 
   def add1(as: List[Int]): List[Int] =
-    foldRight(as, Nil: List[Int])((h, t) => Cons((h+1), t))
+    foldRight(as, Nil: List[Int])((h, t) => Cons(h+1, t))
 
   def toString(as: List[Double]): List[String] =
     foldRight(as, Nil: List[String])((h, t) => Cons(h.toString, t))
@@ -198,6 +196,20 @@ object List {
       case (_, Nil) => Nil
       case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
     }
+
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    @scala.annotation.tailrec
+    def go[B](l: List[B], r: List[B]): Boolean = (l, r) match {
+      case (_, Nil) => true
+      case (Nil, _) => false
+      case (Cons(x, xs), Cons(y, ys)) =>
+        if (x == y) go(xs, ys)
+        else go(xs, sub)
+    }
+
+    go(sup, sub)
+  }
+
 }
 
 class ch3 extends AnyFunSuite {
@@ -347,5 +359,14 @@ class ch3 extends AnyFunSuite {
   test("3.23") {
     assert(List.zipWith(List(1,2), List(1,2))(_ + _) == List(2,4))
     assert(List.zipWith(List(1,2), List(1,2))(_ * _) == List(1,4))
+  }
+
+  test("3.24") {
+    assert(List.hasSubsequence(List(1,2,3), List(1)))
+    assert(List.hasSubsequence(List(1,2,3), List(2,3)))
+    assert(List.hasSubsequence(List(1,2,4,3,2,3), List(2,3)))
+
+    assert(!List.hasSubsequence(List(1,2,4,2), List(2,3)))
+    assert(!List.hasSubsequence(List(1,2,4,3,2), List(2,3)))
   }
 }
