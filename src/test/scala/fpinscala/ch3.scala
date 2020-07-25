@@ -138,6 +138,18 @@ object List {
 
   def map[A, B](as: List[A])(f: A => B): List[B] =
     foldRight(as, Nil: List[B])((h, t) => Cons(f(h), t))
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] =
+    foldRight(as, Nil:List[A])((h, t) => {
+      if (f(h)) Cons(h, t)
+      else t
+    })
+
+  def flatMap[A](as: List[A])(f: A => List[A]): List[A] =
+    foldRight(as, Nil: List[A])((h, t) => append2(f(h), t))
+
+  def flatMap2[A](as: List[A])(f: A => List[A]): List[A] =
+    concat(map(as)(f))
 }
 
 class ch3 extends AnyFunSuite {
@@ -258,5 +270,14 @@ class ch3 extends AnyFunSuite {
 
   test("3.18") {
     assert(List.map(List(1, 2))(_ * 3) == List(3, 6))
+  }
+
+  test("3.19") {
+    assert(List.filter(List(1,2,3,4))(_ % 2 == 0) == List(2,4))
+  }
+
+  test("3.20") {
+    assert(List.flatMap(List(1,2))(x => List(x,x)) == List(1,1,2,2))
+    assert(List.flatMap2(List(1,2))(x => List(x,x)) == List(1,1,2,2))
   }
 }
