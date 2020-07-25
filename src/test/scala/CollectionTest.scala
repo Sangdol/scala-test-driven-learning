@@ -15,6 +15,9 @@ class CollectionTest extends AnyFunSuite {
     assert(List(1,2).exists(_ > 1))
     assert(List(1,2,3).scanLeft(0)(_ + _) == List(0,1,3,6))
 
+    assert(List(1,2).concat(List(3)) == List(1,2,3))
+    assert(List(1,2).++(List(3)) == List(1,2,3))
+
     // 0
     // 3,0
     // 5,3,0
