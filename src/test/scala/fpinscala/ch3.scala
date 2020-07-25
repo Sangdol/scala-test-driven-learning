@@ -150,6 +150,46 @@ object List {
 
   def flatMap2[A](as: List[A])(f: A => List[A]): List[A] =
     concat(map(as)(f))
+
+  def flatMapFilter[A](as: List[A])(f: A => Boolean): List[A] =
+    flatMap(as)(a => if (f(a)) List(a) else Nil)
+
+  def add(l: List[Int], r: List[Int]): List[Int] = {
+    // n^2 complexity - similar to foldLeft
+    @scala.annotation.tailrec
+    def go(l: List[Int], r: List[Int], acc: List[Int]): List[Int] = {
+      (l, r) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(x, xs), Cons(y, ys)) =>
+          go(xs, ys, append(acc, x+y))
+      }
+    }
+
+    go(l, r, Nil)
+  }
+
+  def add2(l: List[Int], r: List[Int]): List[Int] = {
+    // no tailrec - similar to foldRight
+    def go(l: List[Int], r: List[Int], acc: List[Int]): List[Int] = {
+      (l, r) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(x, xs), Cons(y, ys)) => Cons(x+y, go(xs, ys, acc))
+      }
+    }
+
+    go(l, r, Nil)
+  }
+
+  def add3(l: List[Int], r: List[Int]): List[Int] = {
+      (l, r) match {
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case (Cons(x, xs), Cons(y, ys)) => Cons(x+y, add3(xs, ys))
+      }
+    }
+
 }
 
 class ch3 extends AnyFunSuite {
@@ -279,5 +319,20 @@ class ch3 extends AnyFunSuite {
   test("3.20") {
     assert(List.flatMap(List(1,2))(x => List(x,x)) == List(1,1,2,2))
     assert(List.flatMap2(List(1,2))(x => List(x,x)) == List(1,1,2,2))
+  }
+
+  test("3.21") {
+    assert(List.flatMapFilter(List(1,2,3,4))(_ % 2 == 0) == List(2,4))
+  }
+
+  test("3.22") {
+    assert(List.add(List(1,2,3), List(1,2,3)) == List(2,4,6))
+    assert(List.add(List(1,2), List(1,2,3)) == List(2,4))
+
+    assert(List.add2(List(1,2,3), List(1,2,3)) == List(2,4,6))
+    assert(List.add2(List(1,2), List(1,2,3)) == List(2,4))
+
+    assert(List.add3(List(1,2,3), List(1,2,3)) == List(2,4,6))
+    assert(List.add3(List(1,2), List(1,2,3)) == List(2,4))
   }
 }
