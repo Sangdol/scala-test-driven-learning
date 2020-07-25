@@ -108,6 +108,8 @@ class CollectionTest extends AnyFunSuite {
 
     assert(name == "Sang")
     assert(age == 38)
+
+    assert((tuples match { case (a, b, c) => a }) == "Sang")
   }
 
 }
