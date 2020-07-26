@@ -58,4 +58,32 @@ class ch4 extends AnyFunSuite {
     assert(None.orElse(Some(3)) == Some(3))
     assert(Some(2).orElse2(Some(3)) == Some(2))
   }
+
+  test("4.2") {
+    def variance(xs: Seq[Double]): Option[Double] = {
+      if (xs.isEmpty) return None
+
+      val m: Double = xs.sum / xs.size
+
+      // why fold() didn't work?
+      val variance = xs.foldLeft(0.0)((acc, a) => acc + math.pow(a-m, 2)) / xs.size
+
+      Some(variance)
+    }
+
+    assert(variance(Seq(1, 1, 1)) == Some(0))
+    assert(variance(Seq(1, 4, 1)) == Some(2.0))
+    assert(variance(Seq()) == None)
+
+    def mean(xs: Seq[Double]): Option[Double] =
+      if (xs.isEmpty) None
+      else Some(xs.sum / xs.size)
+
+    def variance2(xs: Seq[Double]): Option[Double] =
+      mean(xs) flatMap(m => mean(xs.map(x => math.pow(x-m, 2))))
+
+    assert(variance2(Seq(1, 1, 1)) == Some(0))
+    assert(variance2(Seq(1, 4, 1)) == Some(2.0))
+    assert(variance2(Seq()) == None)
+  }
 }
