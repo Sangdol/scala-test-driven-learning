@@ -4,6 +4,13 @@ import scala.collection.immutable.Range.Inclusive
 
 class CollectionTest extends AnyFunSuite {
 
+  test("Seq") {
+    // Scala's Seq is Java's List
+    // Scala's List is Java's LinkedList
+    // https://stackoverflow.com/questions/10866639/difference-between-a-seq-and-a-list-in-scala
+    assert(Seq(1,2).head == 1)
+  }
+
   test("List") {
     assert(List(1, 2).head == 1)
     assert(List(1, 2)(1) == 2)
