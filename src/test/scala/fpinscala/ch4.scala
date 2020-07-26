@@ -38,6 +38,7 @@ case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
 
 class ch4 extends AnyFunSuite {
+
   test("4.1") {
     // map
     assert(Some(2).map(_ * 3) == Some(6))
@@ -85,5 +86,16 @@ class ch4 extends AnyFunSuite {
     assert(variance2(Seq(1, 1, 1)) == Some(0))
     assert(variance2(Seq(1, 4, 1)) == Some(2.0))
     assert(variance2(Seq()) == None)
+  }
+
+  test("Lift") {
+    // what is the difference between this and flatMap?
+    //   => you can't create a function like abs0 with flatMap.
+    def lift[A,B](f: A => B): Option[A] => Option[B] = _ map f
+
+    // why "lift math.abs" can't be understood by the compiler?
+    def abs0: Option[Double] => Option[Double] = lift(math.abs)
+
+    assert(abs0(Some(-1.0)) == Some(1.0))
   }
 }
