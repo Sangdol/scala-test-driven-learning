@@ -160,7 +160,21 @@ object List {
   def flatMapFilter[A](as: List[A])(f: A => Boolean): List[A] =
     flatMap(as)(a => if (f(a)) List(a) else Nil)
 
-  def add(l: List[Int], r: List[Int]): List[Int] = {
+  def add0(l: List[Int], r: List[Int]): List[Int] = {
+    @scala.annotation.tailrec
+    def go(l: List[Int], r: List[Int], acc: List[Int]): List[Int] = {
+      (l, r) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(x, xs), Cons(y, ys)) =>
+          go(xs, ys, Cons(x+y, acc))
+      }
+    }
+
+    reverse(go(l, r, Nil)) // -> O(n)
+  }
+
+  def add1(l: List[Int], r: List[Int]): List[Int] = {
     // n^2 complexity - similar to foldLeft
     @scala.annotation.tailrec
     def go(l: List[Int], r: List[Int], acc: List[Int]): List[Int] = {
@@ -201,7 +215,22 @@ object List {
       case (Nil, _) => Nil
       case (_, Nil) => Nil
       case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
+      case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
     }
+
+  def zipWith1[A, B, C](l: List[A], r: List[B])(f: (A, B) => C): List[C] = {
+    @scala.annotation.tailrec
+    def go(l: List[A], r: List[B], acc: List[C]): List[C] = {
+      (l, r) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(x, xs), Cons(y, ys)) =>
+          go(xs, ys, Cons(f(x, y), acc))
+      }
+    }
+
+    reverse(go(l, r, Nil: List[C])) // -> O(n)
+  }
 
   def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
     @scala.annotation.tailrec
@@ -213,7 +242,7 @@ object List {
         else go(xs, sub)
     }
 
-    go(sup, sub)
+    go(sup, sub) // -> bug
   }
 
 }
@@ -352,8 +381,11 @@ class ch3 extends AnyFunSuite {
   }
 
   test("3.22") {
-    assert(List.add(List(1,2,3), List(1,2,3)) == List(2,4,6))
-    assert(List.add(List(1,2), List(1,2,3)) == List(2,4))
+    assert(List.add0(List(1,2,3), List(1,2,3)) == List(2,4,6))
+    assert(List.add0(List(1,2), List(1,2,3)) == List(2,4))
+
+    assert(List.add1(List(1,2,3), List(1,2,3)) == List(2,4,6))
+    assert(List.add1(List(1,2), List(1,2,3)) == List(2,4))
 
     assert(List.add2(List(1,2,3), List(1,2,3)) == List(2,4,6))
     assert(List.add2(List(1,2), List(1,2,3)) == List(2,4))
@@ -365,6 +397,8 @@ class ch3 extends AnyFunSuite {
   test("3.23") {
     assert(List.zipWith(List(1,2), List(1,2))(_ + _) == List(2,4))
     assert(List.zipWith(List(1,2), List(1,2))(_ * _) == List(1,4))
+    assert(List.zipWith1(List(1,2), List(1,2))(_ * _) == List(1,4))
+    assert(List.zipWith1(List(1,2,3), List(1,2))(_ * _) == List(1,4))
   }
 
   test("3.24") {
@@ -372,6 +406,10 @@ class ch3 extends AnyFunSuite {
     assert(List.hasSubsequence(List(1,2,3), List(2,3)))
     assert(List.hasSubsequence(List(1,2,4,3,2,3), List(2,3)))
 
+    // This is supposed to be true.
+    assert(!List.hasSubsequence(List(2,2,2,3), List(2,2,3)))
+
+    assert(!List.hasSubsequence(List(2,1,3), List(2,3)))
     assert(!List.hasSubsequence(List(1,2,4,2), List(2,3)))
     assert(!List.hasSubsequence(List(1,2,4,3,2), List(2,3)))
   }
