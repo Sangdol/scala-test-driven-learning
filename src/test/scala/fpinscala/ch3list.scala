@@ -97,6 +97,12 @@ object List {
       case Cons(h, t) => foldLeft(t, f(z, h))(f)
     }
 
+  def foldRandom[A, B](as: List[A], z: B)(f: (B, A) => B): B =
+    as match {
+      case Nil => z
+      case Cons(h, t) => f(foldRandom(t, f(z, h))(f), h)
+    }
+
   def foldLeft2[A, B](as: List[A], z: B)(f: (B, A) => B): B =
     foldRight(reverse(as), z)((x, y) => f(y, x))
 
@@ -368,5 +374,10 @@ class ch3 extends AnyFunSuite {
 
     assert(!List.hasSubsequence(List(1,2,4,2), List(2,3)))
     assert(!List.hasSubsequence(List(1,2,4,3,2), List(2,3)))
+  }
+
+  test("foldRandom") {
+    assert(List.foldRandom(List(1,2,3), Nil: List[Int])((a, b) => Cons(b, a))
+      == List(1,2,3,3,2,1))
   }
 }
