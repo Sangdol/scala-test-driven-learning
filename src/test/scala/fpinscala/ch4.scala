@@ -88,14 +88,32 @@ class ch4 extends AnyFunSuite {
     assert(variance2(Seq()) == None)
   }
 
+  // Lift can be used to make ordinary functions become Option-compatible functions
   test("Lift") {
     // what is the difference between this and flatMap?
     //   => you can't create a function like abs0 with flatMap.
     def lift[A,B](f: A => B): Option[A] => Option[B] = _ map f
 
     // why "lift math.abs" can't be understood by the compiler?
-    def abs0: Option[Double] => Option[Double] = lift(math.abs)
+    def absO: Option[Double] => Option[Double] = lift(math.abs)
 
-    assert(abs0(Some(-1.0)) == Some(1.0))
+    assert(absO(Some(-1.0)) == Some(1.0))
+  }
+
+  test("4.3") {
+
+    def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
+      (a, b) match {
+        case (None, _) => None
+        case (_, None) => None
+        case (Some(get_a), Some(get_b)) => Some(f(get_a, get_b))
+      }
+
+    assert(map2(Some(2), Some(3))(_ + _) == Some(5))
+
+    def map3[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
+      a flatMap(aa => b map(bb => f(aa, bb)))
+
+    assert(map3(Some(2), Some(3))(_ + _) == Some(5))
   }
 }
