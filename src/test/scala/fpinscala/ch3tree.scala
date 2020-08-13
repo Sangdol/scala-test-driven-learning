@@ -38,16 +38,16 @@ object Tree {
       case Branch(l, r) => f(fold(l)(f)(g), fold(r)(f)(g))
     }
 
-  // type error
-  // Leaf(f(v)): Tree[A] => Required Branch[B]
-  // Leaf(f(v)): Branch[B] => Cannot upcast Leaf[B] to Branch[B]
-//  def foldMap[A,B](tree: Tree[A])(f: A => B): Tree[B] =
-//    fold(tree)(Branch(_, _))(v => Leaf(f(v)): Branch[B])
-
   def fold2[A,B](tree: Tree[A])(f: A => B)(g: (B,B) => B): B = tree match {
     case Leaf(v) => f(v)
     case Branch(l, r) => g(fold2(l)(f)(g), fold2(r)(f)(g))
   }
+
+  // type error
+  // Leaf(f(v)): Tree[A] => Required Branch[B]
+  // Leaf(f(v)): Branch[B] => Cannot upcast Leaf[B] to Branch[B]
+//  def foldMap[A,B](f: A => B)(tree: Tree[A]): Tree[B] =
+//    fold(tree)(Branch(_, _))(v => Leaf(f(v)): Tree[A])
 
   def foldMap[A,B](tree: Tree[A])(f: A => B): Tree[B] =
     fold2(tree)(v => Leaf(f(v)): Tree[B])(Branch(_,_))
