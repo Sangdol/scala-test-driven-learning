@@ -171,5 +171,16 @@ class SyntaxTest extends AnyFunSuite {
 
     assert(matchTestWithPatternGuard(1, flag = true) == "one")
     assert(matchTestWithPatternGuard(1, flag = false) == "other")
+
+    def matchTestWithList(l: List[Int]): List[Any] = l match {
+      case Nil => Nil
+      case first :: _ => List(first)
+      case first :: second :: tail => List(first, second, tail)  // this will never be reached.
+    }
+
+    assert(matchTestWithList(Nil) == Nil)
+    assert(matchTestWithList(List(1)) == List(1))
+    assert(matchTestWithList(List(1, 2)) == List(1))
+    assert(matchTestWithList(List(1, 2, 3)) == List(1))
   }
 }
