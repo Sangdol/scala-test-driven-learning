@@ -15,7 +15,10 @@ class CollectionTest extends AnyFunSuite {
     assert(List(1, 2).head == 1)
     assert(List(1, 2)(1) == 2)
 
-    assert(List(1).::(2) == List(2,1))
+    assert(List(2).::(1) == List(1,2))
+    assert(List(1) :+ 2 == List(1,2)) // append
+    assert(1 :: List(2) == List(1,2))
+    assert(1 :: 2 :: List(3) == List(1,2,3))
 
     assert(List(1,2).forall(_ > 0))
     assert(!List(1,2).forall(_ > 1))
@@ -24,6 +27,7 @@ class CollectionTest extends AnyFunSuite {
 
     assert(List(1,2).concat(List(3)) == List(1,2,3))
     assert(List(1,2).++(List(3)) == List(1,2,3))
+    assert(List(1,2) ::: List(3) == List(1,2,3))
 
     // 0
     // 3,0
