@@ -2,6 +2,8 @@ package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.annotation.tailrec
+
 sealed trait Option[+A] {
 
   def map[B](f: A => B): Option[B] = this match {
@@ -46,6 +48,8 @@ class ch4 extends AnyFunSuite {
 
     // my flatMap
     assert(Some(2).flatMap((v: Int) => Some(v.toString)) == Some("2"))
+    assert(Some(2).flatMap((v: Int) => Some(v.toString)) == Some("2"))
+    assert(None.flatMap((v) => Some(v.toString)) == None)
 
     // getOrElse
     assert(Some(2).getOrElse(3) == 2)
@@ -111,9 +115,51 @@ class ch4 extends AnyFunSuite {
 
     assert(map2(Some(2), Some(3))(_ + _) == Some(5))
 
-    def map3[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
+    def map2_2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
       a flatMap(aa => b map(bb => f(aa, bb)))
 
-    assert(map3(Some(2), Some(3))(_ + _) == Some(5))
+    assert(map2_2(Some(2), Some(3))(_ + _) == Some(5))
+  }
+
+  // Difficult!
+  test("4.4") {
+    // MyList vs. List
+    def sequence[A](a: List[Option[A]]): Option[List[A]] = {
+      // MyNil vs. Nil
+      @tailrec
+      def loop(a: List[Option[A]], ol: Option[List[A]]): Option[List[A]] = (a, ol) match {
+        case (None :: _, _) => None
+        case (Nil, _) => ol
+        case (Some(head) :: tail, Some(l)) => loop(tail, Some(l :+ head))
+      }
+
+      loop(a, Some(Nil))
+    }
+
+    assert(sequence(Nil) == Some(Nil))
+    assert(sequence(List(Some(1), Some(2))) == Some(List(1,2)))
+    assert(sequence(List(Some(1), None)) == None)
+
+    // None.flatMap() => None
+    def sequence2[A](a: List[Option[A]]): Option[List[A]] =
+      a match {
+        case Nil => Some(Nil)
+        case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
+      }
+
+    assert(sequence2(Nil) == Some(Nil))
+    assert(sequence2(List(Some(1), Some(2))) == Some(List(1,2)))
+    assert(sequence2(List(Some(1), None)) == None)
+
+    def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
+      a flatMap(aa => b map(bb => f(aa, bb)))
+
+    // map2 returns None if one of the argument is None
+    def sequence3[A](a: List[Option[A]]): Option[List[A]] =
+      a.foldRight[Option[List[A]]](Some(Nil))((x,y) => map2(x,y)(_ :: _))
+
+    assert(sequence3(Nil) == Some(Nil))
+    assert(sequence3(List(Some(1), Some(2))) == Some(List(1,2)))
+    assert(sequence3(List(Some(1), None)) == None)
   }
 }

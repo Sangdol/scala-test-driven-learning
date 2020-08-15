@@ -12,6 +12,7 @@ class CollectionTest extends AnyFunSuite {
   }
 
   test("List") {
+    assert(List() == Nil)
     assert(List(1, 2).head == 1)
     assert(List(1, 2)(1) == 2)
 
