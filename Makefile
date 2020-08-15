@@ -1,2 +1,2 @@
 test-watch:
-	sbt ~test
+	sbt ~testQuick
