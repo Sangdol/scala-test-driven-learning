@@ -8,37 +8,37 @@ import org.scalatest.funsuite.AnyFunSuite
 
 sealed trait MyList[+A] // abstract class
 case object MyNil extends MyList[Nothing] // singleton class
-case class Cons[+B](head: B, tail: MyList[B]) extends MyList[B]
+case class MyCons[+B](head: B, tail: MyList[B]) extends MyList[B]
 
 object MyList {
 
   def sum(ints: MyList[Int]): Int = ints match {
     case MyNil => 0
-    case Cons(x,xs) => x + sum(xs)
+    case MyCons(x,xs) => x + sum(xs)
   }
 
   def product(ints: MyList[Double]): Double = ints match {
     case MyNil => 1
-    case Cons(0.0, _) => 0.0
-    case Cons(x, xs) => x * product(xs)
+    case MyCons(0.0, _) => 0.0
+    case MyCons(x, xs) => x * product(xs)
   }
 
   // variadic function: it takes 0 or more arguments of type A (Seq)
   // https://www.scala-lang.org/api/current/scala/collection/immutable/Seq.html
   def apply[A](as: A*): MyList[A] =
     if (as.isEmpty) MyNil
-    else Cons(as.head, apply(as.tail: _*)) // _*: spread
+    else MyCons(as.head, apply(as.tail: _*)) // _*: spread
 
   def tail[A](list: MyList[A]): MyList[A] = list match {
     case MyNil => sys.error("no more element")
-    case Cons(_, xs) => xs
+    case MyCons(_, xs) => xs
   }
 
   @scala.annotation.tailrec
   def drop[A](list: MyList[A], n: Int): MyList[A] = list match {
     case list if n <= 0 => list  // pattern guard
     case MyNil => MyNil
-    case Cons(_, xs) => drop(xs, n-1)
+    case MyCons(_, xs) => drop(xs, n-1)
   }
 
   @scala.annotation.tailrec
@@ -46,12 +46,12 @@ object MyList {
     if (n <= 0) l
     else l match {
       case MyNil => MyNil
-      case Cons(_,t) => dropFromBook(t, n-1)
+      case MyCons(_,t) => dropFromBook(t, n-1)
     }
 
   @scala.annotation.tailrec
   def dropWhile[A](list: MyList[A], f: A => Boolean): MyList[A] = list match {
-    case Cons(x, xs) if f(x) => dropWhile(xs, f)
+    case MyCons(x, xs) if f(x) => dropWhile(xs, f)
     case _ => list
   }
 
@@ -63,25 +63,25 @@ object MyList {
    */
   @scala.annotation.tailrec
   def dropWhile2[A](as: MyList[A])(f: A => Boolean): MyList[A] = as match {
-    case Cons(h, t) if f(h) => dropWhile2(t)(f)
+    case MyCons(h, t) if f(h) => dropWhile2(t)(f)
     case _ => as
   }
 
   def init[A](list: MyList[A]): MyList[A] = list match {
     case MyNil => MyNil
-    case Cons(_, MyNil) => MyNil
-    case Cons(x, xs) => Cons(x, init(xs))
+    case MyCons(_, MyNil) => MyNil
+    case MyCons(x, xs) => MyCons(x, init(xs))
   }
 
   def setHead[A](list: MyList[A], element: A): MyList[A] = list match {
-    case MyNil => Cons(element, MyNil)
-    case Cons(_, xs) => Cons(element, xs)
+    case MyNil => MyCons(element, MyNil)
+    case MyCons(_, xs) => MyCons(element, xs)
   }
 
   def foldRight[A, B](as: MyList[A], z: B)(f: (A, B) => B): B =
     as match {
       case MyNil => z
-      case Cons(h, t) => f(h, foldRight(t, z)(f))
+      case MyCons(h, t) => f(h, foldRight(t, z)(f))
     }
 
   def foldRight2[A, B](as: MyList[A], z: B)(f: (A, B) => B): B =
@@ -94,13 +94,13 @@ object MyList {
   def foldLeft[A, B](as: MyList[A], z: B)(f: (B, A) => B): B =
     as match {
       case MyNil => z
-      case Cons(h, t) => foldLeft(t, f(z, h))(f)
+      case MyCons(h, t) => foldLeft(t, f(z, h))(f)
     }
 
   def foldRandom[A, B](as: MyList[A], z: B)(f: (B, A) => B): B =
     as match {
       case MyNil => z
-      case Cons(h, t) => f(foldRandom(t, f(z, h))(f), h)
+      case MyCons(h, t) => f(foldRandom(t, f(z, h))(f), h)
     }
 
   def foldLeft2[A, B](as: MyList[A], z: B)(f: (B, A) => B): B =
@@ -125,29 +125,29 @@ object MyList {
     foldLeft(as, 0)((acc, _) => 1 + acc)
 
   def reverse[A](as: MyList[A]): MyList[A] =
-    foldLeft(as, MyNil: MyList[A])((x, y) => Cons(y, x))
+    foldLeft(as, MyNil: MyList[A])((x, y) => MyCons(y, x))
 
   def append[A](as: MyList[A], x: A): MyList[A] =
-    foldRight(as, MyList(x))(Cons(_, _))
+    foldRight(as, MyList(x))(MyCons(_, _))
 
   def append2[A](l: MyList[A], r: MyList[A]): MyList[A] =
-    foldRight(l, r)(Cons(_, _))
+    foldRight(l, r)(MyCons(_, _))
 
   def concat[A](as: MyList[MyList[A]]): MyList[A] =
     foldRight(as, MyNil: MyList[A])(append2)
 
   def add1(as: MyList[Int]): MyList[Int] =
-    foldRight(as, MyNil: MyList[Int])((h, t) => Cons(h+1, t))
+    foldRight(as, MyNil: MyList[Int])((h, t) => MyCons(h+1, t))
 
   def toString(as: MyList[Double]): MyList[String] =
-    foldRight(as, MyNil: MyList[String])((h, t) => Cons(h.toString, t))
+    foldRight(as, MyNil: MyList[String])((h, t) => MyCons(h.toString, t))
 
   def map[A, B](as: MyList[A])(f: A => B): MyList[B] =
-    foldRight(as, MyNil: MyList[B])((h, t) => Cons(f(h), t))
+    foldRight(as, MyNil: MyList[B])((h, t) => MyCons(f(h), t))
 
   def filter[A](as: MyList[A])(f: A => Boolean): MyList[A] =
     foldRight(as, MyNil:MyList[A])((h, t) => {
-      if (f(h)) Cons(h, t)
+      if (f(h)) MyCons(h, t)
       else t
     })
 
@@ -166,8 +166,8 @@ object MyList {
       (l, r) match {
         case (MyNil, _) => acc
         case (_, MyNil) => acc
-        case (Cons(x, xs), Cons(y, ys)) =>
-          go(xs, ys, Cons(x+y, acc))
+        case (MyCons(x, xs), MyCons(y, ys)) =>
+          go(xs, ys, MyCons(x+y, acc))
       }
     }
 
@@ -181,7 +181,7 @@ object MyList {
       (l, r) match {
         case (MyNil, _) => acc
         case (_, MyNil) => acc
-        case (Cons(x, xs), Cons(y, ys)) =>
+        case (MyCons(x, xs), MyCons(y, ys)) =>
           go(xs, ys, append(acc, x+y))
       }
     }
@@ -195,7 +195,7 @@ object MyList {
       (l, r) match {
         case (MyNil, _) => acc
         case (_, MyNil) => acc
-        case (Cons(x, xs), Cons(y, ys)) => Cons(x+y, go(xs, ys, acc))
+        case (MyCons(x, xs), MyCons(y, ys)) => MyCons(x+y, go(xs, ys, acc))
       }
     }
 
@@ -206,7 +206,7 @@ object MyList {
       (l, r) match {
         case (MyNil, _) => MyNil
         case (_, MyNil) => MyNil
-        case (Cons(x, xs), Cons(y, ys)) => Cons(x+y, add3(xs, ys))
+        case (MyCons(x, xs), MyCons(y, ys)) => MyCons(x+y, add3(xs, ys))
       }
     }
 
@@ -214,8 +214,8 @@ object MyList {
     (l, r) match {
       case (MyNil, _) => MyNil
       case (_, MyNil) => MyNil
-      case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
-      case (Cons(x, xs), Cons(y, ys)) => Cons(f(x, y), zipWith(xs, ys)(f))
+      case (MyCons(x, xs), MyCons(y, ys)) => MyCons(f(x, y), zipWith(xs, ys)(f))
+      case (MyCons(x, xs), MyCons(y, ys)) => MyCons(f(x, y), zipWith(xs, ys)(f))
     }
 
   def zipWith1[A, B, C](l: MyList[A], r: MyList[B])(f: (A, B) => C): MyList[C] = {
@@ -224,8 +224,8 @@ object MyList {
       (l, r) match {
         case (MyNil, _) => acc
         case (_, MyNil) => acc
-        case (Cons(x, xs), Cons(y, ys)) =>
-          go(xs, ys, Cons(f(x, y), acc))
+        case (MyCons(x, xs), MyCons(y, ys)) =>
+          go(xs, ys, MyCons(f(x, y), acc))
       }
     }
 
@@ -237,7 +237,7 @@ object MyList {
     def go[B](l: MyList[B], r: MyList[B]): Boolean = (l, r) match {
       case (_, MyNil) => true
       case (MyNil, _) => false
-      case (Cons(x, xs), Cons(y, ys)) =>
+      case (MyCons(x, xs), MyCons(y, ys)) =>
         if (x == y) go(xs, ys)
         else go(xs, sub)
     }
@@ -250,22 +250,22 @@ object MyList {
 class ch3 extends AnyFunSuite {
 
   test("Cons") {
-    val c = Cons(1, MyList(2,3))
+    val c = MyCons(1, MyList(2,3))
 
     assert(c.head == 1)
     assert(c.tail == MyList(2,3))
 
-    assert(Cons(1, MyNil) == MyList(1))
-    assert(Cons(1, Cons(2, MyNil)) == MyList(1, 2))
+    assert(MyCons(1, MyNil) == MyList(1))
+    assert(MyCons(1, MyCons(2, MyNil)) == MyList(1, 2))
   }
 
   test("3.1") {
     def matchTest(list: MyList[Int]): Int =
       list match {
-        case Cons(x, Cons(2, Cons(4, _))) => x // 1
+        case MyCons(x, MyCons(2, MyCons(4, _))) => x // 1
         case MyNil => 42 // 2
-        case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y // 3
-        case Cons(h, t) => h + MyList.sum(t) // 4
+        case MyCons(x, MyCons(y, MyCons(3, MyCons(4, _)))) => x + y // 3
+        case MyCons(h, t) => h + MyList.sum(t) // 4
         case _ => 101 // 5
       }
 
@@ -308,7 +308,7 @@ class ch3 extends AnyFunSuite {
   test("3.8") {
     // "Nil: List[Int]" is needed to prevent Scala from inferring it as List[Nothing]
     // The last element is Consed first.
-    assert(MyList.foldRight(MyList(1, 2, 3), MyNil: MyList[Int])(Cons(_, _)) == MyList(1, 2, 3))
+    assert(MyList.foldRight(MyList(1, 2, 3), MyNil: MyList[Int])(MyCons(_, _)) == MyList(1, 2, 3))
 
     val a = MyNil
     val b = MyNil: MyList[Nothing]
@@ -327,7 +327,7 @@ class ch3 extends AnyFunSuite {
   test("3.10") {
     // The head is added first
     assert(MyList.foldLeft(MyList(1,2,3), 0)(_ + _) == 6)
-    assert(MyList.foldLeft(MyList(1,2,3), MyNil: MyList[Int])((x, y) => Cons(y, x)) == MyList(3, 2, 1))
+    assert(MyList.foldLeft(MyList(1,2,3), MyNil: MyList[Int])((x, y) => MyCons(y, x)) == MyList(3, 2, 1))
   }
 
   test("3.11") {
@@ -341,9 +341,9 @@ class ch3 extends AnyFunSuite {
   }
 
   test("3.13") {
-    assert(MyList.foldRight2(MyList(1,2,3), MyNil: MyList[Int])(Cons(_, _)) == MyList(1,2,3))
-    assert(MyList.foldLeft2(MyList(1,2,3), MyNil: MyList[Int])((x, y) => Cons(y, x)) == MyList(3,2,1))
-    assert(MyList.foldRight3(MyList(1,2,3), MyNil: MyList[Int])(Cons(_, _)) == MyList(1,2,3))
+    assert(MyList.foldRight2(MyList(1,2,3), MyNil: MyList[Int])(MyCons(_, _)) == MyList(1,2,3))
+    assert(MyList.foldLeft2(MyList(1,2,3), MyNil: MyList[Int])((x, y) => MyCons(y, x)) == MyList(3,2,1))
+    assert(MyList.foldRight3(MyList(1,2,3), MyNil: MyList[Int])(MyCons(_, _)) == MyList(1,2,3))
   }
 
   test("3.14") {
@@ -415,7 +415,7 @@ class ch3 extends AnyFunSuite {
   }
 
   test("foldRandom") {
-    assert(MyList.foldRandom(MyList(1,2,3), MyNil: MyList[Int])((a, b) => Cons(b, a))
+    assert(MyList.foldRandom(MyList(1,2,3), MyNil: MyList[Int])((a, b) => MyCons(b, a))
       == MyList(1,2,3,3,2,1))
   }
 }
