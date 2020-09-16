@@ -3,6 +3,7 @@ package fpinscala
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.annotation.tailrec
+import scala.collection.IterableOnce.iterableOnceExtensionMethods
 
 sealed trait Option[+A] {
 
@@ -127,6 +128,9 @@ class ch4 extends AnyFunSuite {
     assert(map2_2(Some(2), Some(3))(_ + _) == Some(5))
   }
 
+  def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
+    a flatMap(aa => b map(bb => f(aa, bb)))
+
   // Difficult!
   test("4.4") {
     // MyList vs. List
@@ -163,9 +167,6 @@ class ch4 extends AnyFunSuite {
     assert(sequence2(List(Some(1), Some(2))) == Some(List(1,2)))
     assert(sequence2(List(Some(1), None)) == None)
 
-    def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
-      a flatMap(aa => b map(bb => f(aa, bb)))
-
     // map2 returns None if one of the argument is None
     def sequence3[A](a: List[Option[A]]): Option[List[A]] =
       a.foldRight[Option[List[A]]](Some(Nil))((x,y) => map2(x,y)(_ :: _))
@@ -194,6 +195,25 @@ class ch4 extends AnyFunSuite {
 
     // why this doesn't work? "Cannot resolve symbol toInt"
 //    assert(traverse(List("1", "2"))(Try(_.toInt)) == Some(List("1", "2")))
+
+    def traverse2[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+      a match {
+        case Nil => Some(Nil)
+        case h :: t => map2(f(h), traverse2(t)(f))(_ :: _)
+      }
+
+    assert(traverse2(Nil)(Some(_)) == Some(Nil))
+    assert(traverse2(List("1", "2"))(Some(_)) == Some(List("1", "2")))
+    assert(traverse2(List("1", "2"))(x => Try(x.toInt)) == Some(List(1, 2)))
+    assert(traverse2(List("1", "x"))(x => Try(x.toInt)) == None)
+
+    def traverse3[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+      a.foldRight[Option[List[B]]](Some(Nil))((h, t) => map2(f(h), t)(_ :: _))
+
+    assert(traverse3(Nil)(Some(_)) == Some(Nil))
+    assert(traverse3(List("1", "3"))(Some(_)) == Some(List("1", "3")))
+    assert(traverse3(List("1", "3"))(x => Try(x.toInt)) == Some(List(1, 3)))
+    assert(traverse3(List("1", "x"))(x => Try(x.toInt)) == None)
   }
 
   test("for-comprehension") {
