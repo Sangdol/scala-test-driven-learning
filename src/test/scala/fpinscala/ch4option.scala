@@ -3,7 +3,6 @@ package fpinscala
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.annotation.tailrec
-import scala.collection.IterableOnce.iterableOnceExtensionMethods
 
 sealed trait Option[+A] {
 
@@ -46,7 +45,11 @@ sealed trait Option[+A] {
 case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
 
-class ch4 extends AnyFunSuite {
+/**
+ * Option Standard Library
+ * https://www.scala-lang.org/api/current/scala/Option.html
+ */
+class ch4option extends AnyFunSuite {
 
   test("4.1") {
     // map
