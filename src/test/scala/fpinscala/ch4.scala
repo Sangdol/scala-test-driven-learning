@@ -144,7 +144,7 @@ class ch4 extends AnyFunSuite {
     def sequence2[A](a: List[Option[A]]): Option[List[A]] =
       a match {
         case Nil => Some(Nil)
-        case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
+        case h :: t => h flatMap (hh => sequence2(t) map (hh :: _))
       }
 
     assert(sequence2(Nil) == Some(Nil))
