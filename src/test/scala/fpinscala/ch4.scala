@@ -20,7 +20,10 @@ sealed trait Option[+A] {
   }
 
   // "=> B": default won't be evaluated it's needed by the function
-  //   (default is a value. why is it needed here?)
+  //   "The default: => B type annotation in getOrElse (and the similar annotation
+  //    in orElse) indicates that the argument is of type B, but won't be evaluated
+  //    until it's needed by the function. Don't worry about this for now -
+  //    we'll talk much more about this concept of non-strictness in the next chapter."
   def getOrElse[B >: A](default: => B): B = this match {
     case None => default
     case Some(get) => get
@@ -171,4 +174,36 @@ class ch4 extends AnyFunSuite {
     assert(sequence3(List(Some(1), Some(2))) == Some(List(1,2)))
     assert(sequence3(List(Some(1), None)) == None)
   }
+
+  def Try[A](a: => A): Option[A] = {
+    try Some(a)
+    catch { case e: Exception => None }
+  }
+
+  test("4.5") {
+    def traverse[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+      a match {
+        case Nil => Some(Nil)
+        case h :: t => f(h) flatMap (hh => traverse(t)(f).map(hh :: _))
+      }
+
+    assert(traverse(Nil)(Some(_)) == Some(Nil))
+    assert(traverse(List("1", "2"))(Some(_)) == Some(List("1", "2")))
+    assert(traverse(List("1", "2"))(x => Try(x.toInt)) == Some(List(1, 2)))
+    assert(traverse(List("1", "x"))(x => Try(x.toInt)) == None)
+
+    // why this doesn't work? "Cannot resolve symbol toInt"
+//    assert(traverse(List("1", "2"))(Try(_.toInt)) == Some(List("1", "2")))
+  }
+
+  test("for-comprehension") {
+    def map2[A,B,C](a: Option[A], b: Option[B])(f: (A,B) => C): Option[C] =
+      for {
+        aa <- a
+        bb <- b
+      } yield f(aa, bb)
+
+    assert(map2(Some(2), Some(3))(_ + _) == Some(5))
+  }
 }
+
