@@ -11,6 +11,9 @@ sealed trait Option[+A] {
     case Some(get) => Some(f(get))
   }
 
+  // why is it called "flatMap"?
+  //  list.flatMap = map to list + append
+  //  option.flatMap = map to option (no append)
   def flatMap[B](f: A => Option[B]): Option[B] = this match {
     case None => None
     case Some(get) => f(get)
@@ -144,6 +147,12 @@ class ch4 extends AnyFunSuite {
     def sequence2[A](a: List[Option[A]]): Option[List[A]] =
       a match {
         case Nil => Some(Nil)
+          // Can I use map instead of flatMap here?
+          //   No, because map() requires a function that returns a value
+          //   but there's no map() that can be used as f
+          //   which returns a value.
+          // Why can't we make one?
+          //   We need a function that returns Option to handle a None element.
         case h :: t => h flatMap (hh => sequence2(t) map (hh :: _))
       }
 
