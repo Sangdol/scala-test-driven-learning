@@ -48,6 +48,7 @@ case object None extends Option[Nothing]
 /**
  * Option Standard Library
  * https://www.scala-lang.org/api/current/scala/Option.html
+ * (sequence, traverse, and map2 are missing)
  */
 class ch4option extends AnyFunSuite {
 
