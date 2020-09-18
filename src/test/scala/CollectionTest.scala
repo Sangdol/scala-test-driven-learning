@@ -4,6 +4,11 @@ import scala.collection.immutable.Range.Inclusive
 
 class CollectionTest extends AnyFunSuite {
 
+  test("Empty & Nil") {
+    assert(List.empty == Nil)
+    assert(List.empty eq Nil)
+  }
+
   test("Seq") {
     // Scala's Seq is Java's List
     // Scala's List is Java's LinkedList
