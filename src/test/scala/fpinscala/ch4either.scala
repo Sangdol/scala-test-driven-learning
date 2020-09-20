@@ -74,6 +74,9 @@ class ch4either extends AnyFunSuite {
     // Why doesn't this work?
     //   because map() is about Right and the type of Right is not defined.
 //    assert(Left(1).map(_) == Left(1))
+    // No, this doesn't work either.
+    val l: Either[Int, Int] = Left(1)
+//    assert(l.map(_) == Left(1))
 
     assert(Right(2).flatMap(x => Right(x + 2)) == Right(4))
     assert(Left(2).flatMap(x => Left(x)) == Left(2))
