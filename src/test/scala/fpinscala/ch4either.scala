@@ -91,4 +91,20 @@ class ch4either extends AnyFunSuite {
     val e: Either[Int, Int] = Left(2)
     assert(e.map2(Right(1))((x, y) => x + y) == Left(2))
   }
+
+  test("4.7") {
+    def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+      es.foldRight[Either[E, List[A]]](Right(Nil))((e, acc) => e.map2(acc)(_ :: _))
+
+    assert(sequence(List(Right(1), Right(2))) == Right(List(1, 2)))
+    assert(sequence(List(Right(1), Right(2), Left(1))) == Left(1))
+
+    def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+      as.foldRight[Either[E, List[B]]](Right(Nil))((e, acc) => f(e).map2(acc)(_ :: _))
+
+    assert(traverse(List(1, 2))(x => Right(x * 2)) == Right(List(2, 4)))
+
+    def sequence2[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+      traverse(es)(x => x)
+  }
 }
