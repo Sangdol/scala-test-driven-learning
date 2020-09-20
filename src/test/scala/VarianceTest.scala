@@ -58,4 +58,17 @@ class VarianceTest extends AnyFunSuite {
 //    assert(catDogList.head.bark() == "dog bark")
   }
 
+  test("immutability") {
+    case class Value[+T](v: T)
+
+    val v = Value[Int](1)
+
+    // Why mutable value doesn't work? ("Covariant type T occurs in contravariant position")
+    //   Because Value[Animal] can have a dog or a cat.
+//    case class Value[+T](var v: T)
+
+    // Then why this doesn't work? "Contravariant type T occurs in covariant position in type T of value v"
+//    case class Value[-T](var v: T)
+  }
+
 }
