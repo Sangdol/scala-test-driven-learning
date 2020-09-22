@@ -3,8 +3,8 @@ package fpinscala
 import org.scalatest.funsuite.AnyFunSuite
 
 // +E, +A: "+" to accommodate Nothing, Exception, etc. (variance)
-sealed trait Either[+E, +A] {
-  def map[B](f: A => B): Either[E, B] = this match {
+sealed trait MyEither[+E, +A] {
+  def map[B](f: A => B): MyEither[E, B] = this match {
     case Left(v) => Left(v)
     case Right(v) => Right(f(v))
   }
@@ -18,44 +18,44 @@ sealed trait Either[+E, +A] {
   //   on the other hand we're keeping the value of Left as is.
   // Why can't we just use E?
   //   "Covariant type E occurs in contravariant position"
-  def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match {
+  def flatMap[EE >: E, B](f: A => MyEither[EE, B]): MyEither[EE, B] = this match {
     case Left(v) => Left(v)
     case Right(v) => f(v)
   }
 
-  def orElse[EE >: E, B >: A](b: => Either[EE, B]): Either[EE, B] = this match {
+  def orElse[EE >: E, B >: A](b: => MyEither[EE, B]): MyEither[EE, B] = this match {
     case Left(_) => b
     case Right(v) => Right(v)
   }
 
   // We don't need "EE >: E" because "b" is something new.
-  def orElse2[C, B >: A](b: => Either[C, B]): Either[C, B] = this match {
+  def orElse2[C, B >: A](b: => MyEither[C, B]): MyEither[C, B] = this match {
     case Left(_) => b
     case Right(v) => Right(v)
   }
 
-  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = this match {
+  def map2[EE >: E, B, C](b: MyEither[EE, B])(f: (A, B) => C): MyEither[EE, C] = this match {
     case Left(v) => Left(v)
     case Right(v) => b.flatMap(bb => Right(f(v, bb)))
   }
 
-  def map22[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = (this, b) match {
+  def map22[EE >: E, B, C](b: MyEither[EE, B])(f: (A, B) => C): MyEither[EE, C] = (this, b) match {
     case (Left(v), _) => Left(v)
     case (Right(v), Right(bb)) => Right(f(v, bb))
   }
 
-  def map23[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
+  def map23[EE >: E, B, C](b: MyEither[EE, B])(f: (A, B) => C): MyEither[EE, C] =
     b flatMap(bb => this.map(v => f(v, bb)))
 
-  def map24[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
+  def map24[EE >: E, B, C](b: MyEither[EE, B])(f: (A, B) => C): MyEither[EE, C] =
     for {
       bb <- b
       v <- this
     } yield f(v, bb)
 }
 // +E so that E can be None (?)
-case class Left[+E](value: E) extends Either[E, Nothing]
-case class Right[+A](value: A) extends Either[Nothing, A]
+case class Left[+E](value: E) extends MyEither[E, Nothing]
+case class Right[+A](value: A) extends MyEither[Nothing, A]
 
 
 /**
@@ -63,7 +63,7 @@ case class Right[+A](value: A) extends Either[Nothing, A]
  * https://www.scala-lang.org/api/current/scala/util/Either.html
  */
 class ch4either extends AnyFunSuite {
-  def Try[E, A](a: => A): Either[Exception, A] =
+  def Try[E, A](a: => A): MyEither[Exception, A] =
     try Right(a)
     catch { case e: Exception => Left(e) }
 
@@ -75,7 +75,7 @@ class ch4either extends AnyFunSuite {
     //   because map() is about Right and the type of Right is not defined.
 //    assert(Left(1).map(_) == Left(1))
     // No, this doesn't work either.
-    val l: Either[Int, Int] = Left(1)
+    val l: MyEither[Int, Int] = Left(1)
 //    assert(l.map(_) == Left(1))
 
     assert(Right(2).flatMap(x => Right(x + 2)) == Right(4))
@@ -88,23 +88,23 @@ class ch4either extends AnyFunSuite {
     assert(Left(2).map2(Right(1))((x, y) => x) == Left(2))
     assert(Right(2).map2(Right(1))((x, y) => x + y) == Right(3))
 
-    val e: Either[Int, Int] = Left(2)
+    val e: MyEither[Int, Int] = Left(2)
     assert(e.map2(Right(1))((x, y) => x + y) == Left(2))
   }
 
   test("4.7") {
-    def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
-      es.foldRight[Either[E, List[A]]](Right(Nil))((e, acc) => e.map2(acc)(_ :: _))
+    def sequence[E, A](es: List[MyEither[E, A]]): MyEither[E, List[A]] =
+      es.foldRight[MyEither[E, List[A]]](Right(Nil))((e, acc) => e.map2(acc)(_ :: _))
 
     assert(sequence(List(Right(1), Right(2))) == Right(List(1, 2)))
     assert(sequence(List(Right(1), Right(2), Left(1))) == Left(1))
 
-    def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
-      as.foldRight[Either[E, List[B]]](Right(Nil))((e, acc) => f(e).map2(acc)(_ :: _))
+    def traverse[E, A, B](as: List[A])(f: A => MyEither[E, B]): MyEither[E, List[B]] =
+      as.foldRight[MyEither[E, List[B]]](Right(Nil))((e, acc) => f(e).map2(acc)(_ :: _))
 
     assert(traverse(List(1, 2))(x => Right(x * 2)) == Right(List(2, 4)))
 
-    def sequence2[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+    def sequence2[E, A](es: List[MyEither[E, A]]): MyEither[E, List[A]] =
       traverse(es)(x => x)
   }
 }
