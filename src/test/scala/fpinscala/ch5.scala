@@ -1,6 +1,7 @@
 package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
+import Stream._
 
 sealed trait Stream[+A] {
 
@@ -12,6 +13,14 @@ sealed trait Stream[+A] {
   def toList: List[A] = this match {
     case Empty => Nil
     case Cons(h, t) => (h() :: t().toList)
+  }
+
+  def take(n: Int): Stream[A] = {
+    if (n <= 0) Empty
+    else this match {
+      case Empty => Empty
+      case Cons(h, t) => cons(h(), t().take(n-1))
+    }
   }
 
 }
@@ -70,7 +79,13 @@ class ch5 extends AnyFunSuite {
 
   test("5.1") {
     assert(Option(1) == Stream(1).optionHead)
-    assert(List(1, 2, 3) == Stream(1, 2, 3).toList)
+    assert(List(1,2,3) == Stream(1,2,3).toList)
+  }
+
+  test("5.2") {
+    // Do I need an equal method?
+//    assert(Stream(1,2) == Stream(1,2,3).take(2))
+    assert(List(1,2) == Stream(1,2,3).take(2).toList)
   }
 
 }
