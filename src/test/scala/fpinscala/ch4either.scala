@@ -37,9 +37,11 @@ sealed trait MyEither[+E, +A] {
   def map2[EE >: E, B, C](b: MyEither[EE, B])(f: (A, B) => C): MyEither[EE, C] = this match {
     case Left(v) => Left(v)
     case Right(v) => b.flatMap(bb => Right(f(v, bb)))
+//    case Right(v) => b.map(bb => f(v, bb))  // this is also possible
   }
 
   def map22[EE >: E, B, C](b: MyEither[EE, B])(f: (A, B) => C): MyEither[EE, C] = (this, b) match {
+    case (_, Left(v)) => Left(v)
     case (Left(v), _) => Left(v)
     case (Right(v), Right(bb)) => Right(f(v, bb))
   }
@@ -76,13 +78,16 @@ class ch4either extends AnyFunSuite {
 //    assert(Left(1).map(_) == Left(1))
     // No, this doesn't work either.
     val l: MyEither[Int, Int] = Left(1)
-//    assert(l.map(_) == Left(1))
+    // l.map(_) == "x => l.map(x)"
+    // l.map(_ + 1) => l.map(x => x + 1)
+    assert(l.map(_ + 0) == Left(1))
 
     assert(Right(2).flatMap(x => Right(x + 2)) == Right(4))
     assert(Left(2).flatMap(x => Left(x)) == Left(2))
     assert(Left(3).flatMap(x => Left(x.toString)) == Left(3))
 
     assert(Left(2).orElse(Right(1)) == Right(1))
+    assert(Left(2).orElse2(Right(1)) == Right(1))
     assert(Right(2).orElse(Right(1)) == Right(2))
 
     assert(Left(2).map2(Right(1))((x, y) => x) == Left(2))
@@ -98,6 +103,12 @@ class ch4either extends AnyFunSuite {
 
     assert(sequence(List(Right(1), Right(2))) == Right(List(1, 2)))
     assert(sequence(List(Right(1), Right(2), Left(1))) == Left(1))
+    assert(sequence(List(Left(3), Right(2), Left(1))) == Left(3))
+
+    def sequence1[E, A](es: List[MyEither[E, A]]): MyEither[E, List[A]] =
+      es.foldRight[MyEither[E, List[A]]](Right(Nil))((e, acc) => e.map22(acc)(_ :: _))
+
+    assert(sequence1(List(Left(3), Right(2), Left(1))) == Left(1))
 
     def traverse[E, A, B](as: List[A])(f: A => MyEither[E, B]): MyEither[E, List[B]] =
       as.foldRight[MyEither[E, List[B]]](Right(Nil))((e, acc) => f(e).map2(acc)(_ :: _))
