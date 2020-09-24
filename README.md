@@ -1,6 +1,5 @@
 ### How to run tests
 
 ```
-sbt
-~test
+make
 ```
