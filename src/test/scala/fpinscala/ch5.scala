@@ -23,6 +23,18 @@ sealed trait Stream[+A] {
     }
   }
 
+  def drop(n: Int): Stream[A] = this match {
+    case Empty => Empty
+    case Cons(_, t) =>
+      if (n > 1) t().drop(n-1)
+      else t()
+  }
+
+  def drop2(n: Int): Stream[A] = this match {
+    case Cons(_, t) if n > 0 => t().drop2(n-1)
+    case _ => this
+  }
+
 }
 
 case object Empty extends Stream[Nothing]
@@ -86,6 +98,17 @@ class ch5 extends AnyFunSuite {
     // Do I need an equal method?
 //    assert(Stream(1,2) == Stream(1,2,3).take(2))
     assert(List(1,2) == Stream(1,2,3).take(2).toList)
+
+    // drop
+    assert(List() == Stream().drop(1).toList)
+    assert(List() == Stream(1).drop(1).toList)
+    assert(List(2) == Stream(1,2).drop(1).toList)
+    assert(List(3) == Stream(1,2,3).drop(2).toList)
+
+    assert(List() == Stream().drop2(1).toList)
+    assert(List() == Stream(1).drop2(1).toList)
+    assert(List(2) == Stream(1,2).drop2(1).toList)
+    assert(List(3) == Stream(1,2,3).drop2(2).toList)
   }
 
 }
