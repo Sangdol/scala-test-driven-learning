@@ -35,6 +35,11 @@ sealed trait Stream[+A] {
     case _ => this
   }
 
+  def takeWhile(p: A => Boolean): Stream[A] = this match {
+    case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
+    case _ => Empty
+  }
+
 }
 
 case object Empty extends Stream[Nothing]
@@ -109,6 +114,12 @@ class ch5 extends AnyFunSuite {
     assert(List() == Stream(1).drop2(1).toList)
     assert(List(2) == Stream(1,2).drop2(1).toList)
     assert(List(3) == Stream(1,2,3).drop2(2).toList)
+  }
+
+  test("5.3") {
+    assert(List() == Stream(1,2).takeWhile(_ > 2).toList)
+    assert(List() == Stream(1,2,3,4).takeWhile(_ > 2).toList)
+    assert(List(3,4) == Stream(3,4,1,2,3,4).takeWhile(_ > 2).toList)
   }
 
 }
