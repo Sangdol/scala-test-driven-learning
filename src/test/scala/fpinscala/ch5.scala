@@ -40,6 +40,11 @@ sealed trait Stream[+A] {
     case _ => Empty
   }
 
+  def exist(p: A => Boolean): Boolean = this match {
+    case Cons(h, t) => p(h()) || t().exist(p)
+    case _ => false
+  }
+
 }
 
 case object Empty extends Stream[Nothing]
@@ -120,6 +125,11 @@ class ch5 extends AnyFunSuite {
     assert(List() == Stream(1,2).takeWhile(_ > 2).toList)
     assert(List() == Stream(1,2,3,4).takeWhile(_ > 2).toList)
     assert(List(3,4) == Stream(3,4,1,2,3,4).takeWhile(_ > 2).toList)
+  }
+
+  test("exist") {
+    assert(Stream(1,2).exist(_ == 1))
+    assert(!Stream(1,2).exist(_ == 3))
   }
 
 }
