@@ -45,6 +45,14 @@ sealed trait Stream[+A] {
     case _ => false
   }
 
+  def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+    case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    case _ => z
+  }
+
+  def exist2(p: A => Boolean): Boolean =
+    foldRight(false)((a,b) => p(a) || b)
+
 }
 
 case object Empty extends Stream[Nothing]
@@ -130,6 +138,9 @@ class ch5 extends AnyFunSuite {
   test("exist") {
     assert(Stream(1,2).exist(_ == 1))
     assert(!Stream(1,2).exist(_ == 3))
+
+    assert(Stream(1,2).exist2(_ == 1))
+    assert(!Stream(1,2).exist2(_ == 3))
   }
 
 }
