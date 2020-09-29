@@ -11,6 +11,8 @@ sealed trait MyEither[+E, +A] {
 
   // Why "EE >: E"
   //   It doesn't have any practical reason because the value of Left doesn't change.
+  //   -> it actually has a practical reason since we can only flatMap() to
+  //      a super type. Need to test a bit more.
   // Then why it's even needed?
   //   Because we need this type signature for f.
   // Then why isn't "B >: A" needed?

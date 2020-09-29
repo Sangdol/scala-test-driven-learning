@@ -29,6 +29,9 @@ class VarianceTest extends AnyFunSuite {
       // U is a supertype of B e.g., Animal and Dog.
       // U is invariant.
       // Since it returns animal the returned list also takes a dog and a cat.
+      //
+      // What if I want to make a dog list?
+      //
       def prepend[U >: B](elem: U): ListNode[U] = ListNode(elem, this)
 
       // It can return ListNode[B] since it's in a covariant position.
