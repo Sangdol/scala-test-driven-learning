@@ -8,13 +8,13 @@ import scala.collection.mutable.ListBuffer
 
 sealed trait Stream[+A] {
 
-  def optionHead: Option[A] = this match {
+  def headOption: Option[A] = this match {
     case Empty => None
     case Cons(h, t) => Option(h())
   }
 
   def toList: List[A] = this match {
-    case Cons(h, t) => (h() :: t().toList)
+    case Cons(h, t) => h() :: t().toList
     case _ => Nil
   }
 
@@ -98,6 +98,9 @@ sealed trait Stream[+A] {
 //      println(a)
       if (p(a)) cons(a, b) else Empty
     })
+
+  def headOption2: Option[A] =
+    foldRight(None: Option[A])((a,b) => Option(a))
 }
 
 case object Empty extends Stream[Nothing]
@@ -158,7 +161,8 @@ class ch5 extends AnyFunSuite {
   }
 
   test("5.1") {
-    assert(Option(1) == Stream(1).optionHead)
+    assert(Option(1) == Stream(1).headOption)
+    assert(Stream().headOption.isEmpty)
     assert(List(1,2,3) == Stream(1,2,3).toList)
 
     assert(List(1,2,3) == Stream(1,2,3).toList2)
@@ -208,4 +212,8 @@ class ch5 extends AnyFunSuite {
     assert(List(4,3) == Stream(4,3,2,1).takeWhile2(_ > 2).toList)
   }
 
+  test("5.6") {
+    assert(Option(1) == Stream(1).headOption2)
+    assert(Stream().headOption2.isEmpty)
+  }
 }
