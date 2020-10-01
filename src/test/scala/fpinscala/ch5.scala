@@ -85,6 +85,8 @@ sealed trait Stream[+A] {
   def exist2(p: A => Boolean): Boolean =
     foldRight(false)((a,b) => p(a) || b)
 
+  def forAll(p: A => Boolean): Boolean =
+    foldRight(true)((a,b) => p(a) && b)
 }
 
 case object Empty extends Stream[Nothing]
@@ -177,6 +179,11 @@ class ch5 extends AnyFunSuite {
 
     assert(Stream(1,2).exist2(_ == 1))
     assert(!Stream(1,2).exist2(_ == 3))
+  }
+
+  test("5.4") {
+    assert(Stream(1,2).forAll(_ > 0))
+    assert(!Stream(1,2).forAll(_ > 1))
   }
 
 }
