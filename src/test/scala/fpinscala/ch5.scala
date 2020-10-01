@@ -87,6 +87,17 @@ sealed trait Stream[+A] {
 
   def forAll(p: A => Boolean): Boolean =
     foldRight(true)((a,b) => p(a) && b)
+
+  def takeWhile2(p: A => Boolean): Stream[A] =
+    foldRight(Empty: Stream[A])((a,b) =>  {
+//      This evaluates "b" and change the order of execution.
+//      (similar to heisenbug)
+//      println(a, b)
+//
+//      This is okay.
+//      println(a)
+      if (p(a)) cons(a, b) else Empty
+    })
 }
 
 case object Empty extends Stream[Nothing]
@@ -141,6 +152,11 @@ class ch5 extends AnyFunSuite {
     assert(counter2 == 1)  // double evaluation
   }
 
+  test("cons") {
+    assert(List(1) == cons(1, Empty).toList)
+
+  }
+
   test("5.1") {
     assert(Option(1) == Stream(1).optionHead)
     assert(List(1,2,3) == Stream(1,2,3).toList)
@@ -150,8 +166,6 @@ class ch5 extends AnyFunSuite {
   }
 
   test("5.2") {
-    // Do I need an equal method?
-//    assert(Stream(1,2) == Stream(1,2,3).take(2))
     assert(List(1,2) == Stream(1,2,3).take(2).toList)
     assert(List(1,2) == Stream(1,2,3).take2(2).toList)
 
@@ -183,7 +197,15 @@ class ch5 extends AnyFunSuite {
 
   test("5.4") {
     assert(Stream(1,2).forAll(_ > 0))
-    assert(!Stream(1,2).forAll(_ > 1))
+    assert(!Stream(0,1,2,3).forAll(_ > 2))
+  }
+
+  test("5.5") {
+    // ducking difficult to understand
+    assert(List() == Stream(1,2).takeWhile2(_ > 2).toList)
+    assert(List() == Stream(1,2,3,4).takeWhile2(_ > 2).toList)
+    assert(List(3,4) == Stream(3,4,1,2,3,4).takeWhile2(_ > 2).toList)
+    assert(List(4,3) == Stream(4,3,2,1).takeWhile2(_ > 2).toList)
   }
 
 }
