@@ -10,7 +10,7 @@ sealed trait Stream[+A] {
 
   def headOption: Option[A] = this match {
     case Empty => None
-    case Cons(h, t) => Option(h())
+    case Cons(h, _) => Option(h())
   }
 
   def toList: List[A] = this match {
@@ -83,24 +83,37 @@ sealed trait Stream[+A] {
   }
 
   def exist2(p: A => Boolean): Boolean =
-    foldRight(false)((a,b) => p(a) || b)
+    foldRight(false)((h, t) => p(h) || t)
 
   def forAll(p: A => Boolean): Boolean =
-    foldRight(true)((a,b) => p(a) && b)
+    foldRight(true)((h, t) => p(h) && t)
 
   def takeWhile2(p: A => Boolean): Stream[A] =
-    foldRight(Empty: Stream[A])((a,b) =>  {
+    foldRight(Empty: Stream[A])((h, t) =>  {
 //      This evaluates "b" and change the order of execution.
 //      (similar to heisenbug)
 //      println(a, b)
 //
 //      This is okay.
 //      println(a)
-      if (p(a)) cons(a, b) else Empty
+      if (p(h)) cons(h, t) else Empty
     })
 
   def headOption2: Option[A] =
-    foldRight(None: Option[A])((a,b) => Option(a))
+    foldRight(None: Option[A])((h, _) => Option(h))
+
+  def map[B](f: A => B): Stream[B] =
+    foldRight(Empty: Stream[B])((h, t) => cons(f(h), t))
+
+  def filter(p: A => Boolean): Stream[A] =
+    foldRight(Empty: Stream[A])((h, t) => if (p(h)) cons(h, t) else t)
+
+  // difficult to find out the spec..
+  def append[AA >: A](s: => Stream[AA]): Stream[AA] =
+    foldRight(s)((h, t) => cons(h,t))
+
+  def flatMap[B](f: A => Stream[B]): Stream[B] =
+    foldRight(Empty: Stream[B])((h, t) => f(h).append(t))
 }
 
 case object Empty extends Stream[Nothing]
@@ -215,5 +228,12 @@ class ch5 extends AnyFunSuite {
   test("5.6") {
     assert(Option(1) == Stream(1).headOption2)
     assert(Stream().headOption2.isEmpty)
+  }
+
+  test("5.7") {
+    assert(List(2,4) == Stream(1,2).map(_ * 2).toList)
+    assert(List(2) == Stream(1,2,3).filter(_ % 2 == 0).toList)
+    assert(List(1,2) == Stream(1).append(Stream(2)).toList)
+    assert(List(2,4) == Stream(1,2).flatMap(s => Stream(s*2)).toList)
   }
 }
