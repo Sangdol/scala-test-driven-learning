@@ -3,6 +3,9 @@ package fpinscala
 import org.scalatest.funsuite.AnyFunSuite
 import Stream._
 
+import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
+
 sealed trait Stream[+A] {
 
   def optionHead: Option[A] = this match {
@@ -11,8 +14,32 @@ sealed trait Stream[+A] {
   }
 
   def toList: List[A] = this match {
-    case Empty => Nil
     case Cons(h, t) => (h() :: t().toList)
+    case _ => Nil
+  }
+
+  def toList2: List[A] = {
+    @tailrec
+    def go(s: Stream[A], acc: List[A]): List[A] = s match {
+      case Cons(h, t) => go(t(), h() :: acc)
+      case _ => acc
+    }
+
+    go(this, Nil).reverse
+  }
+
+  def toList3: List[A] = {
+    val buf = new ListBuffer[A]
+
+    @tailrec
+    def go(s: Stream[A]): List[A] = s match {
+      case Cons(h, t) =>
+        buf += h()
+        go(t())
+      case _ => buf.toList
+    }
+
+    go(this)
   }
 
   def take(n: Int): Stream[A] = {
@@ -21,6 +48,11 @@ sealed trait Stream[+A] {
       case Empty => Empty
       case Cons(h, t) => cons(h(), t().take(n-1))
     }
+  }
+
+  def take2(n: Int): Stream[A] = this match {
+    case Cons(h, t) if n > 0 => cons(h(), t().take(n-1))
+    case _ => Empty
   }
 
   def drop(n: Int): Stream[A] = this match {
@@ -110,12 +142,16 @@ class ch5 extends AnyFunSuite {
   test("5.1") {
     assert(Option(1) == Stream(1).optionHead)
     assert(List(1,2,3) == Stream(1,2,3).toList)
+
+    assert(List(1,2,3) == Stream(1,2,3).toList2)
+    assert(List(1,2,3) == Stream(1,2,3).toList3)
   }
 
   test("5.2") {
     // Do I need an equal method?
 //    assert(Stream(1,2) == Stream(1,2,3).take(2))
     assert(List(1,2) == Stream(1,2,3).take(2).toList)
+    assert(List(1,2) == Stream(1,2,3).take2(2).toList)
 
     // drop
     assert(List() == Stream().drop(1).toList)
