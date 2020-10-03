@@ -99,6 +99,7 @@ sealed trait Stream[+A] {
       if (p(h)) cons(h, t) else Empty
     })
 
+  // Is there any use of this?
   def headOption2: Option[A] =
     foldRight(None: Option[A])((h, _) => Option(h))
 
@@ -114,12 +115,51 @@ sealed trait Stream[+A] {
 
   def flatMap[B](f: A => Stream[B]): Stream[B] =
     foldRight(Empty: Stream[B])((h, t) => f(h).append(t))
+
+  def find(p: A => Boolean): Option[A] =
+    filter(p).headOption
 }
 
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
 object Stream {
+
+  val ones: Stream[Int] = Stream.cons(1, ones)
+
+  def constant[A](a: A): Stream[A] =
+    Stream.cons(a, constant(a))
+
+  def from(n: Int): Stream[Int] =
+    Stream.cons(n, from(n+1))
+
+  def fibs: Stream[Int] = {
+    def go(c: Int, n: Int): Stream[Int] =
+      Stream.cons(c, go(n, c+n))
+
+    go(0, 1)
+  }
+
+  /**
+   * Corecursive function:
+   *   - produces data <-> recursive function consumes data
+   *   - aka guarded recursion
+   *
+  * Why Option is used? to stop when f returns None
+   */
+  def unfold[A,S](z: S)(f: S => Option[(A,S)]): Stream[A] =
+    f(z) match {
+      case Some((a, s)) => cons(a, unfold(s)(f))
+      case None => Empty
+    }
+
+  val ones2: Stream[Int] = unfold(1)(x => Option((x, x)))
+
+  def constant2[A](a: A): Stream[A] = unfold(a)(x => Option((x, x)))
+
+  def from2(n: Int): Stream[Int] = unfold(n)(x => Option((x, x+1)))
+
+  val fibs2 = unfold((0,1))({ case (c,n) => Some((c, (n, c+n))) })
 
   def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
     lazy val h = hd
@@ -235,5 +275,42 @@ class ch5 extends AnyFunSuite {
     assert(List(2) == Stream(1,2,3).filter(_ % 2 == 0).toList)
     assert(List(1,2) == Stream(1).append(Stream(2)).toList)
     assert(List(2,4) == Stream(1,2).flatMap(s => Stream(s*2)).toList)
+  }
+
+  test("infinite") {
+    // "forward reference extends over definition of value ones"
+    // if `ones` was defined here.
+    assert(List(1,1,1) == Stream.ones.take(3).toList)
+  }
+
+  test("5.8") {
+    assert(List(2,2,2) == Stream.constant(2).take(3).toList)
+    assert(List("2") == Stream.constant("2").take(1).toList)
+  }
+
+  test("5.9") {
+    assert(List(2,3,4) == Stream.from(2).take(3).toList)
+  }
+
+  test("5.10") {
+    assert(List(0,1,1,2,3) == Stream.fibs.take(5).toList)
+  }
+
+  test("5.11") {
+    assert(List(1,1,1,1) == Stream.unfold(0)(x => Option((x+1, x))).take(4).toList)
+    assert(List(0,1,2,3) == Stream.unfold(0)(x => Option((x, x+1))).take(4).toList)
+  }
+
+  /**
+   * ???
+   * Preserving sharing isn’t something we usually rely on when programming
+   * with streams, since it’s extremely delicate and not tracked by the types.
+   * For instance, sharing is destroyed when calling even xs.map(x => x).
+   */
+  test("5.12") {
+    assert(List(1,1) == Stream.ones2.take(2).toList)
+    assert(List(2,2) == Stream.constant2(2).take(2).toList)
+    assert(List(2,3) == Stream.from2(2).take(2).toList)
+    assert(List(0,1,1,2,3) == Stream.fibs2.take(5).toList)
   }
 }
