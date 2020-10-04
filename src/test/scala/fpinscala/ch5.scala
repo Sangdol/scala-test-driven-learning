@@ -118,6 +118,48 @@ sealed trait Stream[+A] {
 
   def find(p: A => Boolean): Option[A] =
     filter(p).headOption
+
+  def unfoldMap[B](f: A => B): Stream[B] =
+    unfold(this)({
+      case Cons(h, t) => Some((f(h()), t()))
+      case _ => None
+    })
+
+  def unfoldTake(n: Int): Stream[A] =
+    unfold((this, n))({
+      case (Cons(h, t), n) if n > 0 => Some(h(), (t(), n-1))
+      case _ => None
+    })
+
+  // From the answer: why does it handle the n=1 case specially?
+  def takeViaUnfold(n: Int): Stream[A] =
+    unfold((this,n)) {
+      case (Cons(h,t), 1) => Some((h(), (empty, 0)))
+      case (Cons(h,t), n) if n > 1 => Some((h(), (t(), n-1)))
+      case _ => None
+    }
+
+  def unfoldTakeWhile(p: A => Boolean): Stream[A] =
+    unfold(this)({
+      case Cons(h,t) if p(h()) => Some(h(), t())
+      case _ => None
+    })
+
+  def zipWith[B](s: Stream[B])(f: (A, B) => B): Stream[B] =
+    unfold((this, s))({
+      case (Cons(_, _), Empty) => None
+      case (Empty, Cons(_, _)) => None
+      case (Cons(lh, lt), Cons(rh, rt)) => Some(f(lh(), rh()), (lt(), rt()))
+      case _ => None
+    })
+
+  def zipAll[B](s: Stream[B]): Stream[(Option[A], Option[B])] =
+    unfold((this, s))({
+      case (Cons(lh, lt), Empty) => Some((Some(lh()), None), (lt(), Empty))
+      case (Empty, Cons(rh, rt)) => Some((None, Some(rh())), (Empty, rt()))
+      case (Cons(lh, lt), Cons(rh, rt)) => Some((Some(lh()), Some(rh())), (lt(), rt()))
+      case _ => None
+    })
 }
 
 case object Empty extends Stream[Nothing]
@@ -159,7 +201,7 @@ object Stream {
 
   def from2(n: Int): Stream[Int] = unfold(n)(x => Option((x, x+1)))
 
-  val fibs2 = unfold((0,1))({ case (c,n) => Some((c, (n, c+n))) })
+  val fibs2: Stream[Int] = unfold((0,1))({ case (c,n) => Some((c, (n, c+n))) })
 
   def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
     lazy val h = hd
@@ -312,5 +354,26 @@ class ch5 extends AnyFunSuite {
     assert(List(2,2) == Stream.constant2(2).take(2).toList)
     assert(List(2,3) == Stream.from2(2).take(2).toList)
     assert(List(0,1,1,2,3) == Stream.fibs2.take(5).toList)
+  }
+
+  /**
+   * What is the main difference between foldRight and unfold?
+   */
+  test("5.13") {
+    assert(List(2,4) == Stream(1,2).unfoldMap(_ * 2).toList)
+
+    assert(List(1) == Stream(1,2).unfoldTake(1).toList)
+    assert(List() == Stream().unfoldTake(1).toList)
+
+    assert(List() == Stream(1,2).unfoldTakeWhile(_ > 2).toList)
+    assert(List() == Stream(1,2,3,4).unfoldTakeWhile(_ > 2).toList)
+    assert(List(3,4) == Stream(3,4,1,2,3,4).unfoldTakeWhile(_ > 2).toList)
+
+    assert(List(2,4,6) == Stream(1,2,3).zipWith(Stream(1,2,3))(_ + _).toList)
+    assert(List(2,4,6) == Stream(1,2,3,4).zipWith(Stream(1,2,3))(_ + _).toList)
+
+    assert(List((Some(1), None)) == Stream(1).zipAll(Empty).toList)
+    assert(List((Some(1), Some(2))) == Stream(1).zipAll(Stream(2)).toList)
+    assert(Nil == Stream().zipAll(Stream()).toList)
   }
 }
