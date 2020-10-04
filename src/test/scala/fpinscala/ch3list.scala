@@ -6,6 +6,8 @@ package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.annotation.tailrec
+
 sealed trait MyList[+A] // abstract class
 case object MyNil extends MyList[Nothing] // singleton class
 case class MyCons[+B](head: B, tail: MyList[B]) extends MyList[B]
@@ -232,7 +234,34 @@ object MyList {
     reverse(go(l, r, MyNil: MyList[C])) // -> O(n)
   }
 
+  @tailrec
+  def startsWith[B](l: MyList[B], r: MyList[B]): Boolean = (l, r) match {
+    case (_, MyNil) => true
+    case (MyCons(l, ls), MyCons(r, rs)) if l == r => startsWith(ls, rs)
+    case _ => false
+  }
+
   def hasSubsequence[A](sup: MyList[A], sub: MyList[A]): Boolean = {
+    @tailrec
+    def go[B](l: MyList[B]): Boolean = l match {
+      case MyCons(_, xs) =>
+        if (startsWith(xs, sub)) true
+        else go(xs)
+      case _ => false
+    }
+
+    go(MyCons(None, sup))
+  }
+
+  @tailrec
+  def hasSubsequence2[A](sup: MyList[A], sub: MyList[A]): Boolean = sup match {
+    case MyNil => sub == MyNil
+    case _ if startsWith(sup, sub) => true
+    case MyCons(h, t) => hasSubsequence2(t, sub)
+  }
+
+  // There's a bug in this function.
+  def hasSubsequenceWrong[A](sup: MyList[A], sub: MyList[A]): Boolean = {
     @scala.annotation.tailrec
     def go[B](l: MyList[B], r: MyList[B]): Boolean = (l, r) match {
       case (_, MyNil) => true
@@ -402,16 +431,26 @@ class ch3 extends AnyFunSuite {
   }
 
   test("3.24") {
+    assert(MyList.hasSubsequence(MyList(), MyList()))
     assert(MyList.hasSubsequence(MyList(1,2,3), MyList(1)))
     assert(MyList.hasSubsequence(MyList(1,2,3), MyList(2,3)))
     assert(MyList.hasSubsequence(MyList(1,2,4,3,2,3), MyList(2,3)))
 
-    // This is supposed to be true.
-    assert(!MyList.hasSubsequence(MyList(2,2,2,3), MyList(2,2,3)))
-
     assert(!MyList.hasSubsequence(MyList(2,1,3), MyList(2,3)))
     assert(!MyList.hasSubsequence(MyList(1,2,4,2), MyList(2,3)))
     assert(!MyList.hasSubsequence(MyList(1,2,4,3,2), MyList(2,3)))
+
+    assert(MyList.hasSubsequence2(MyList(), MyList()))
+    assert(MyList.hasSubsequence2(MyList(1,2,3), MyList(1)))
+    assert(MyList.hasSubsequence2(MyList(1,2,3), MyList(2,3)))
+    assert(MyList.hasSubsequence2(MyList(1,2,4,3,2,3), MyList(2,3)))
+
+    assert(!MyList.hasSubsequence2(MyList(2,1,3), MyList(2,3)))
+    assert(!MyList.hasSubsequence2(MyList(1,2,4,2), MyList(2,3)))
+    assert(!MyList.hasSubsequence2(MyList(1,2,4,3,2), MyList(2,3)))
+
+    // This is supposed to be true.
+    assert(!MyList.hasSubsequenceWrong(MyList(2,2,2,3), MyList(2,2,3)))
   }
 
   test("foldRandom") {
