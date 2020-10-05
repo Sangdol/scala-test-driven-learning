@@ -25,6 +25,12 @@ sealed trait MyEither[+E, +A] {
     case Right(v) => f(v)
   }
 
+  // Why not this (like 5.14)?
+//  def flatMap2[E, B](f: A => MyEither[E, B]): MyEither[E, B] = this match {
+//    case Left(v) => Left(v)
+//    case Right(v) => f(v)
+//  }
+
   def orElse[EE >: E, B >: A](b: => MyEither[EE, B]): MyEither[EE, B] = this match {
     case Left(_) => b
     case Right(v) => Right(v)

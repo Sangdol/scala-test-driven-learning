@@ -72,17 +72,20 @@ sealed trait Stream[+A] {
     case _ => Empty
   }
 
-  def exist(p: A => Boolean): Boolean = this match {
-    case Cons(h, t) => p(h()) || t().exist(p)
+  def exists(p: A => Boolean): Boolean = this match {
+    case Cons(h, t) => p(h()) || t().exists(p)
     case _ => false
   }
 
+  // Why is this foldRight when it evaluates from the left?
+  //  It's not about evaluating from the left but about accumulating on the right.
+  //  It'll go into the recursion of the right side first when it evaluates.
   def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
     case Cons(h, t) => f(h(), t().foldRight(z)(f))
     case _ => z
   }
 
-  def exist2(p: A => Boolean): Boolean =
+  def exists2(p: A => Boolean): Boolean =
     foldRight(false)((h, t) => p(h) || t)
 
   def forAll(p: A => Boolean): Boolean =
@@ -90,12 +93,12 @@ sealed trait Stream[+A] {
 
   def takeWhile2(p: A => Boolean): Stream[A] =
     foldRight(Empty: Stream[A])((h, t) =>  {
-//      This evaluates "b" and change the order of execution.
+//      This evaluates "t" and change the order of execution.
 //      (similar to heisenbug)
-//      println(a, b)
+//      println(h, t)
 //
 //      This is okay.
-//      println(a)
+//      println(h)
       if (p(h)) cons(h, t) else Empty
     })
 
@@ -160,6 +163,40 @@ sealed trait Stream[+A] {
       case (Cons(lh, lt), Cons(rh, rt)) => Some((Some(lh()), Some(rh())), (lt(), rt()))
       case _ => None
     })
+
+  // Thinking out of the box - using multiple methods...
+  def startsWith[A](s: Stream[A]): Boolean =
+    zipAll(s).takeWhile(_._2.isDefined).forAll({
+      case (l, r) => l == r
+    })
+
+  def tails: Stream[Stream[A]] =
+    unfold(this)({
+      case Cons(h, t) => Some(Cons(h, t), t())
+      case _ => None
+    })
+
+  def hasSubsequence[A](s: Stream[A]): Boolean =
+    tails exists (_ startsWith s)
+
+  // Wrong
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    unfold(tails)({
+      case Cons(h, t) => Some(h().foldRight(z)(f), t())
+      case _ => None
+    }).append(Stream(z))
+
+  // difficult
+  def scanRight2[B](z: B)(f: (A, => B) => B): Stream[B] = {
+    // Why is it okay to pass (z, (Stream(z)) which isn't B
+    // as the first argument of foldRight?
+    //   B of foldRight is (B, Stream[B]) of scanRight2.
+    foldRight((z, Stream(z)))((h, t) => {
+      lazy val t1 = t
+      val b2 = f(h, t1._1)
+      (b2, cons(b2, t1._2))
+    })._2
+  }
 }
 
 case object Empty extends Stream[Nothing]
@@ -287,11 +324,11 @@ class ch5 extends AnyFunSuite {
   }
 
   test("exist") {
-    assert(Stream(1,2).exist(_ == 1))
-    assert(!Stream(1,2).exist(_ == 3))
+    assert(Stream(1,2).exists(_ == 1))
+    assert(!Stream(1,2).exists(_ == 3))
 
-    assert(Stream(1,2).exist2(_ == 1))
-    assert(!Stream(1,2).exist2(_ == 3))
+    assert(Stream(1,2).exists2(_ == 1))
+    assert(!Stream(1,2).exists2(_ == 3))
   }
 
   test("5.4") {
@@ -375,5 +412,42 @@ class ch5 extends AnyFunSuite {
     assert(List((Some(1), None)) == Stream(1).zipAll(Empty).toList)
     assert(List((Some(1), Some(2))) == Stream(1).zipAll(Stream(2)).toList)
     assert(Nil == Stream().zipAll(Stream()).toList)
+  }
+
+  test("hasSubsequence") {
+    assert(Stream(1,2,3).hasSubsequence(Stream(2,3)))
+  }
+
+  test("5.14") {
+    assert(Stream(1,2,3).startsWith(Empty))
+    assert(Stream(1,2,3).startsWith(Stream(1)))
+    assert(Stream(1,2,3).startsWith(Stream(1,2)))
+    assert(!Stream(1,2,3).startsWith(Stream(1,3)))
+  }
+
+  test("5.15") {
+    assert(List(List(1,2), List(2)) == Stream(1,2).tails.toList.map(_.toList))
+  }
+
+  test("5.16 scanRight") {
+    // Can it be implemented using unfold? How, or why not?
+    //   "The function can't be implemented using `unfold`,
+    //    since `unfold` generates elements of the `Stream`
+    //    from left to right.
+    //    It can be implemented using `foldRight` though.
+    //  -> what couldn't the unfold solution do?
+    //
+    // Could it be implemented using another function we’ve written?
+    //   Probably.
+    assert(List(3,2,0) == Stream(1,2).scanRight(0)(_ + _).toList)
+    assert(List(0,0,0) == Stream(1,2).scanRight(0)(_ * _).toList)
+    assert(List(List(1,2), List(2), List()) ==
+      Stream(1,2).scanRight(Empty: Stream[Int])(cons(_, _)).toList.map(_.toList))
+
+    // This is the correct function.
+    assert(List(3,2,0) == Stream(1,2).scanRight2(0)(_ + _).toList)
+    assert(List(0,0,0) == Stream(1,2).scanRight2(0)(_ * _).toList)
+    assert(List(List(1,2), List(2), List()) ==
+      Stream(1,2).scanRight2(Empty: Stream[Int])(cons(_, _)).toList.map(_.toList))
   }
 }
