@@ -1,5 +1,1 @@
-### How to run tests
-
-```
-make
-```
+Take a look at the Makefile.
