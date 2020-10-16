@@ -222,7 +222,7 @@ object Stream {
   /**
    * Corecursive function:
    *   - produces data <-> recursive function consumes data
-   *   - aka guarded recursion
+   *   - aka guarded recursion - f guards by returning None (Option)
    *
   * Why Option is used? to stop when f returns None
    */
@@ -238,6 +238,8 @@ object Stream {
 
   def from2(n: Int): Stream[Int] = unfold(n)(x => Option((x, x+1)))
 
+  // case is a way to unpack a tuple (it's a partial function)
+  // or you could do t._1, t._2
   val fibs2: Stream[Int] = unfold((0,1))({ case (c,n) => Some((c, (n, c+n))) })
 
   def cons[A](hd: => A, tl: => Stream[A]): Stream[A] = {
@@ -381,12 +383,38 @@ class ch5 extends AnyFunSuite {
   }
 
   /**
-   * ???
+   * About the footnote.
+   *
+   * The recursive definition consumes constant memory
+   * even if we keep a reference to it around while traversing it,
+   * while the unfold-based implementation does not.
+   *
+   * "even if we keep a reference to it around while traversing it"
+   * -> what does this mean?
+   *    it consumes constant memory because it keeps a reference to it
+   *    not "even if".
+   *
+   * "while the unfold-based implementation does not."
+   * -> what does this mean?
+   *    does it mean it does not consume constant memory and consume linear memory?
+   *    why? it should also keep a referent to the value.
+   *
+   *    or does it mean that it doesn't keep a reference?
+   *    it makes more sense.
+   *
    * Preserving sharing isn’t something we usually rely on when programming
    * with streams, since it’s extremely delicate and not tracked by the types.
    * For instance, sharing is destroyed when calling even xs.map(x => x).
+   *
+   * - why it's destroyed? (what does it mean?
+   *   - I guess it means that it loses the connection to the sharing.
+   *     but why is it a problem?
+   *
+   *  There's a question but it doesn't have explanation about my questions.
+   *  https://stackoverflow.com/questions/55919618/what-does-preserve-sharing-means-in-lazy-streams
    */
   test("5.12") {
+    ones.map(x => x)
     assert(List(1,1) == Stream.ones2.take(2).toList)
     assert(List(2,2) == Stream.constant2(2).take(2).toList)
     assert(List(2,3) == Stream.from2(2).take(2).toList)
