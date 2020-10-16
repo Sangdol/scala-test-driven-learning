@@ -164,6 +164,12 @@ sealed trait Stream[+A] {
       case _ => None
     })
 
+  def zipAll2[B](s: Stream[B]): Stream[(Option[A], Option[B])] =
+    unfold((this, s)){
+      case (Empty, Empty) => None
+      case (s1, s2) => Some((s1.headOption, s2.headOption), (s1.drop(1), s2.drop(1)))
+    }
+
   // Thinking out of the box - using multiple methods...
   def startsWith[A](s: Stream[A]): Boolean =
     zipAll(s).takeWhile(_._2.isDefined).forAll({
@@ -440,6 +446,10 @@ class ch5 extends AnyFunSuite {
     assert(List((Some(1), None)) == Stream(1).zipAll(Empty).toList)
     assert(List((Some(1), Some(2))) == Stream(1).zipAll(Stream(2)).toList)
     assert(Nil == Stream().zipAll(Stream()).toList)
+
+    assert(List((Some(1), None)) == Stream(1).zipAll2(Empty).toList)
+    assert(List((Some(1), Some(2))) == Stream(1).zipAll2(Stream(2)).toList)
+    assert(Nil == Stream().zipAll2(Stream()).toList)
   }
 
   test("hasSubsequence") {
