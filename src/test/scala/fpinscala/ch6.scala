@@ -83,6 +83,39 @@ object RNG {
     go(count, rng, Nil)
   }
 
+  type Rand[+A] = RNG => (A, RNG)
+
+  val int: Rand[Int] = _.nextInt
+
+  def unit[A](a: A): Rand[A] =
+    rng => (a, rng)
+
+  def map[A,B](s: Rand[A])(f: A => B): Rand[B] = rng => {
+    val (a, r) = s(rng)
+    (f(a), r)
+  }
+
+  val nonNegativeEven: Rand[Int] =
+    map(nonNegativeInt)(i => i - i % 2)
+
+  val doubleViaMap: Rand[Double] =
+    map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
+
+  def map2[A,B,C](s1: Rand[A], s2: Rand[B])(f: (A,B) => C): Rand[C] = (rng1, rng2) => {
+    val (a1, r1) = s1(rng1)
+    val (a2, r2) = s2(r1)
+    (f(a1, a2), r2)
+  }
+
+  def both[A,B](ra: Rand[A], rb: Rand[B]): Rand[(A,B)] =
+    map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] =
+    both(int, double)
+
+  val randDoubleInt: Rand[(Double, Int)] =
+    both(double, int)
+
 }
 
 // how to test it?
@@ -106,6 +139,19 @@ class ch6 extends AnyFunSuite {
 
   test("6.4") {
     assert(RNG.ints(3)(Simple(1))._1.size == 3)
+  }
+
+  test("nonNegativeEven") {
+    assert(nonNegativeEven(Simple(1))._1 % 2 == 0)
+  }
+
+  test("6.5") {
+    assert(doubleViaMap(Simple(1))._1 < 1)
+  }
+
+  test("6.6") {
+    assert(randIntDouble(Simple(1))._1 <= (Int.MaxValue, 1))
+    assert(randDoubleInt(Simple(1))._1 <= (1, Int.MaxValue))
   }
 
 }
