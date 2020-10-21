@@ -176,11 +176,23 @@ sealed trait Stream[+A] {
       case (l, r) => l == r
     })
 
+  def startsWithGrisha[A](that: Stream[A]): Boolean = (this, that) match {
+    case (_, Empty)                         => true
+    case (Cons(a,b), Cons(x,y)) if a()==x() => b().startsWithGrisha(y())
+    case _                                  => false
+  }
+
+  def startsWithDuy[A](s: Stream[A]): Boolean = zipAll(s).foldRight(true){
+    case ((Some(a), Some(b)), flag) => a == b && flag
+    case ((None, Some(_)), _) => false
+    case ((Some(_), None), flag) => flag
+  }
+
   def tails: Stream[Stream[A]] =
-    unfold(this)({
+    unfold(this){
       case Cons(h, t) => Some(Cons(h, t), t())
-      case _ => None
-    })
+      case Empty => None
+    }
 
   def hasSubsequence[A](s: Stream[A]): Boolean =
     tails exists (_ startsWith s)
@@ -202,6 +214,17 @@ sealed trait Stream[+A] {
       val b2 = f(h, t1._1)
       (b2, cons(b2, t1._2))
     })._2
+  }
+
+  // Does it need to be lazy?
+  def scanRightNonLazy[B](z: B)(f: (A, => B) => B): Stream[B] = {
+    // Why is it okay to pass (z, (Stream(z)) which isn't B
+    // as the first argument of foldRight?
+    //   B of foldRight is (B, Stream[B]) of scanRight2.
+    foldRight(Stream(z))((h, t) => {
+      val b2 = f(h, t.headOption.get)
+      cons(b2, t)
+    })
   }
 }
 
@@ -461,6 +484,23 @@ class ch5 extends AnyFunSuite {
     assert(Stream(1,2,3).startsWith(Stream(1)))
     assert(Stream(1,2,3).startsWith(Stream(1,2)))
     assert(!Stream(1,2,3).startsWith(Stream(1,3)))
+    assert(!Stream(1,2,3).startsWith(Stream(1,2,4)))
+
+    assert(Stream(1,2,3).startsWithGrisha(Empty))
+    assert(Stream(1,2,3).startsWithGrisha(Stream(1)))
+    assert(Stream(1,2,3).startsWithGrisha(Stream(1,2)))
+    assert(!Stream(1,2,3).startsWithGrisha(Stream(1,3)))
+    assert(!Stream(1,2,3).startsWithGrisha(Stream(1,2,4)))
+
+    assert(Stream(1,2,3).startsWithDuy(Empty))
+    assert(Stream(1,2,3).startsWithDuy(Stream(1)))
+    assert(Stream(1,2,3).startsWithDuy(Stream(1,2)))
+    assert(!Stream(1,2,3).startsWithDuy(Stream(1,3)))
+    assert(!Stream(1,2,3).startsWithDuy(Stream(1,2,4)))
+    assert(!Stream(1,2,3).startsWithDuy(Stream(2,2,3)))
+    // (1,2) (2,3) (3,None)
+    assert(!Stream(1,2,3).startsWithDuy(Stream(2,3)))
+    assert(!Stream(1,2,3).startsWithDuy(Stream(1,2,3,4)))
   }
 
   test("5.15") {
@@ -483,9 +523,15 @@ class ch5 extends AnyFunSuite {
       Stream(1,2).scanRight(Empty: Stream[Int])(cons(_, _)).toList.map(_.toList))
 
     // This is the correct function.
+    // (0, (0)), (2, (2,0)), (3, (3,2,0))
     assert(List(3,2,0) == Stream(1,2).scanRight2(0)(_ + _).toList)
     assert(List(0,0,0) == Stream(1,2).scanRight2(0)(_ * _).toList)
     assert(List(List(1,2), List(2), List()) ==
       Stream(1,2).scanRight2(Empty: Stream[Int])(cons(_, _)).toList.map(_.toList))
+
+    assert(List(3,2,0) == Stream(1,2).scanRightNonLazy(0)(_ + _).toList)
+    assert(List(0,0,0) == Stream(1,2).scanRightNonLazy(0)(_ * _).toList)
+    assert(List(List(1,2), List(2), List()) ==
+      Stream(1,2).scanRightNonLazy(Empty: Stream[Int])(cons(_, _)).toList.map(_.toList))
   }
 }
