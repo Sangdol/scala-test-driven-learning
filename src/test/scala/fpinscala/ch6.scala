@@ -74,10 +74,9 @@ object RNG {
     @tailrec
     def go(count: Int, rng: RNG, l: List[Int]): (List[Int], RNG) = count match {
       case 0 => (l, rng)
-      case _ => {
+      case _ =>
         val (i, r) = rng.nextInt
         go(count-1, r, i :: l)
-      }
     }
 
     go(count, rng, Nil)
@@ -101,7 +100,7 @@ object RNG {
   val doubleViaMap: Rand[Double] =
     map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
 
-  def map2[A,B,C](s1: Rand[A], s2: Rand[B])(f: (A,B) => C): Rand[C] = (rng1, rng2) => {
+  def map2[A,B,C](s1: Rand[A], s2: Rand[B])(f: (A,B) => C): Rand[C] = rng1 => {
     val (a1, r1) = s1(rng1)
     val (a2, r2) = s2(r1)
     (f(a1, a2), r2)
