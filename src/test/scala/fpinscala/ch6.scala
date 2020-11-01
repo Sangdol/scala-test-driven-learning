@@ -100,8 +100,8 @@ object RNG {
   val doubleViaMap: Rand[Double] =
     map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
 
-  def map2[A,B,C](s1: Rand[A], s2: Rand[B])(f: (A,B) => C): Rand[C] = rng1 => {
-    val (a1, r1) = s1(rng1)
+  def map2[A,B,C](s1: Rand[A], s2: Rand[B])(f: (A,B) => C): Rand[C] = rng => {
+    val (a1, r1) = s1(rng)
     val (a2, r2) = s2(r1)
     (f(a1, a2), r2)
   }
@@ -114,6 +114,31 @@ object RNG {
 
   val randDoubleInt: Rand[(Double, Int)] =
     both(double, int)
+
+  // (difficult - answer from the author))
+  // Isn't acc a list? How can it be used as an argument of map2?
+  //  No, acc is Rand[List[A]] and f is Rand[A].
+  def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = rng => {
+    def go[B](fs: List[Rand[B]], as: List[B]): Rand[List[B]] = rng => {
+        fs match {
+          case Nil => unit(as)(rng)
+          case f :: t =>
+            val (a2, r2) = f(rng)
+            go(t, a2 :: as)(r2)
+        }
+    }
+
+    go(fs, Nil)(rng)
+  }
+
+  def intsViaSequence[A](count: Int): Rand[List[Int]] =
+    sequence(List.fill(count)(int))
+
+  def intsViaSequence2[A](count: Int): Rand[List[Int]] =
+    sequence2(List.fill(count)(int))
 
 }
 
@@ -151,6 +176,11 @@ class ch6 extends AnyFunSuite {
   test("6.6") {
     assert(randIntDouble(Simple(1))._1 <= (Int.MaxValue, 1))
     assert(randDoubleInt(Simple(1))._1 <= (1, Int.MaxValue))
+  }
+
+  test("6.7") {
+    assert(intsViaSequence(3)(Simple(1))._1.size == 3)
+    assert(intsViaSequence2(3)(Simple(1))._1.size == 3)
   }
 
 }
