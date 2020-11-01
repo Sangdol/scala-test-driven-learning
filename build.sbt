@@ -9,4 +9,9 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.1.0" % "test"
 )
 
+// https://www.scala-sbt.org/1.x/docs/Howto-Scala.html
+initialCommands in console := """
+  import fpinscala._
 
+  println("fpinscala is imported")
+"""
