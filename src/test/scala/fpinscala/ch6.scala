@@ -44,6 +44,7 @@ object RNG {
   // 0~1(exclusive)
   def double(rng: RNG): (Double, RNG) = {
     val (i, r) = nonNegativeInt(rng)
+    // i % Int.MaxValue for excluding 1
     ((i % Int.MaxValue).toDouble / Int.MaxValue, r)
   }
 
@@ -54,7 +55,7 @@ object RNG {
 
   def intDouble(rng: RNG): ((Int, Double), RNG) = {
     val (i, r) = rng.nextInt
-    val (d, r2) = RNG.double(r)
+    val (d, r2) = double(r)
     ((i, d), r2)
   }
 
@@ -73,13 +74,23 @@ object RNG {
   def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
     @tailrec
     def go(count: Int, rng: RNG, l: List[Int]): (List[Int], RNG) = count match {
-      case 0 => (l, rng)
+      case i if i <= 0 => (l, rng)
       case _ =>
         val (i, r) = rng.nextInt
         go(count-1, r, i :: l)
     }
 
     go(count, rng, Nil)
+  }
+
+  def intsDuy(count: Int)(rng: RNG): (List[Int], RNG) = {
+    val xs = (1 to count)
+      .foldRight(List(rng.nextInt))((_, acc) =>
+        acc.head._2.nextInt :: acc
+      )
+
+    val generatedInts = xs.map(_._1)
+    (generatedInts, xs.head._2)
   }
 
   type Rand[+A] = RNG => (A, RNG)
