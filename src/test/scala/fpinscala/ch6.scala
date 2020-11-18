@@ -160,30 +160,30 @@ object RNG {
   def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
     val (i, rng2) = nonNegativeInt(rng)
     val mod = i % n
-    // Where is this formula from? Why not "i >= 0"?
+    // This is to check if i is in the last bucket which is smaller than n
+    // to avoid skewed result.
     if (i + (n - 1) - mod >= 0)
       (mod, rng2)
-    // Is it a typo of the book?
-    // Shouldn't this be rng2 not to be stuck in an infinite loop?
-    // How to test this?
+    // Is it a typo of the book (rng2 instead of rng).
+    // (how could I test it?)
     else nonNegativeLessThan(n)(rng2)
   }
 
   def nonNegativeLessThanViaFlatMap(n: Int): Rand[Int] =
-    flatMap(nonNegativeInt)({ i =>
+    flatMap(nonNegativeInt){ i =>
       val mod = i % n
       if (i + (n - 1) - mod >= 0) {
         // unit(mod)
-        {rng => (mod, rng)}
+        rng => (mod, rng)
       } else
-        nonNegativeLessThanViaFlatMap(i)
-    })
+        nonNegativeLessThanViaFlatMap(n)
+    }
 
   def mapViaFlatMap[A,B](s: Rand[A])(f: A => B): Rand[B] =
     flatMap(s)(i => unit(f(i)))
 
   def map2ViaFlatMap[A,B,C](s1: Rand[A], s2: Rand[B])(f: (A,B) => C): Rand[C] =
-    flatMap(s1)(i => map(s2)(j => f(i, j)))
+    flatMap(s1)(i => mapViaFlatMap(s2)(j => f(i, j)))
 }
 
 // how to test it?
