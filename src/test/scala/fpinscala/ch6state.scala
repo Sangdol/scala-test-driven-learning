@@ -18,6 +18,13 @@ case class State[S,+A](run: S => (A, S)) {
   def map2[B,C](s2: State[S,B])(f: (A,B) => C): State[S,C] =
     flatMap(a => s2.map(b => f(a, b)))
 
+  // for-comprehension
+  def map2for[B,C](s2: State[S,B])(f: (A,B) => C): State[S,C] =
+    for {
+      a <- this
+      b <- s2
+    } yield f(a, b)
+
 }
 
 object State {
@@ -43,6 +50,7 @@ class ch6state extends AnyFunSuite {
 
     // (1, 2), (2, 1) => (1+2, 1)
     assert(inc.map2(dec)((a,b) => a + b).run(1) == (3, 1))
+    assert(inc.map2for(dec)((a,b) => a + b).run(1) == (3, 1))
     // State[S, List[inc, dec]]
     assert(sequence(List(inc, dec)).run(1) == (List(1, 2), 1))
   }
