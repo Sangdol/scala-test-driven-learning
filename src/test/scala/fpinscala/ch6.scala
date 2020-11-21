@@ -12,7 +12,6 @@ trait RNG {
 }
 
 object RNG {
-
   case class Simple(seed: Long) extends RNG {
     override def nextInt: (Int, RNG) = {
       val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
