@@ -24,7 +24,6 @@ case class State[S,+A](run: S => (A, S)) {
       a <- this
       b <- s2
     } yield f(a, b)
-
 }
 
 object State {
@@ -37,7 +36,21 @@ object State {
     sts.foldRight(unit[S,List[A]](List[A]()))((st, acc) => st.map2(acc)(_ :: _))
   }
 
+  def modify[S](f: S => S): State[S, Unit] = for {
+    s <- get // Gets the current state and assigns it to `s`.
+    _ <- set(f(s)) // Sets the new state to `f` applied to `s`.
+  } yield ()
+
+  def get[S]: State[S,S] = State(s => (s, s))
+
+  def set[S](s: S): State[S,Unit] = State(_ => ((), s))
+
 }
+
+sealed trait Input
+case object Coin extends Input
+case object Turn extends Input
+case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 class ch6state extends AnyFunSuite {
 
@@ -53,6 +66,70 @@ class ch6state extends AnyFunSuite {
     assert(inc.map2for(dec)((a,b) => a + b).run(1) == (3, 1))
     // State[S, List[inc, dec]]
     assert(sequence(List(inc, dec)).run(1) == (List(1, 2), 1))
+  }
+
+  // Very difficult
+  test("6.11") {
+    // simple candy dispenser
+    // input: insert coin / turn knob
+    // state: locked / unlocked
+    // track: how many candies are left / how many coins
+    // rules
+    //   - coin -> unlock when candy > 0
+    //   - turn -> dispense candy -> lock
+    //   - locked + turn -> not working
+    //   - unlocked + coin -> not working
+    //   - no_candy -> ignores all input
+    //
+    // Why two Inputs? because coin + turn
+
+    object Candy {
+      def update: Input => Machine => Machine = (i: Input) => (s: Machine) =>
+        (i, s) match {
+          case (_, Machine(_, 0, _)) => s
+          case (Coin, Machine(false, _, _)) => s
+          case (Turn, Machine(true, _, _)) => s
+          case (Coin, Machine(true, candy, coin)) =>
+            Machine(false, candy, coin + 1)
+          case (Turn, Machine(false, candy, coin)) =>
+            Machine(true, candy - 1, coin)
+        }
+
+      def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+        _ <- sequence(inputs map (modify[Machine] _ compose update))
+        s <- get
+      } yield (s.coins, s.candies)
+
+      // What is the value of _? (Int, Int)
+      // Why do we need (Int, Int) here? it's the end result.
+      //   Can't I just take values from Machine or maybe we don't need machine.
+      //   The candy and coin values look redundant.
+      // Why there's no explicit 'run'? because it's hidden in flatMap.
+      def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] =
+        sequence(inputs map (modify[Machine] _ compose update)).flatMap(
+          _ => get.map(s => (s.coins, s.candies)))
+    }
+
+    // Coin
+    // working
+    assert(Candy.simulateMachine(List(Coin)).run(Machine(true,10,5))._2 == Machine(false,10,6))
+
+    // no candy
+    assert(Candy.simulateMachine(List(Coin)).run(Machine(true,0,5))._2 == Machine(true,0,5))
+    // already unlocked
+    assert(Candy.simulateMachine(List(Coin)).run(Machine(false,10,5))._2 == Machine(false,10,5))
+
+    // Turn
+    // working
+    assert(Candy.simulateMachine(List(Turn)).run(Machine(false,10,5))._2 == Machine(true,9,5))
+    // locked
+    assert(Candy.simulateMachine(List(Turn)).run(Machine(true,10,5))._2 == Machine(true,10,5))
+
+    // Multiple steps
+    assert(Candy.simulateMachine(List(Coin, Turn)).run(Machine(true,10,5))._2 == Machine(true,9,6))
+
+    // No candies
+    assert(Candy.simulateMachine(List(Coin, Turn)).run(Machine(true,0,5))._2 == Machine(true,0,5))
   }
 
 }
