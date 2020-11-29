@@ -55,15 +55,15 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 class ch6state extends AnyFunSuite {
 
   test("6.10") {
-    val inc: State[Int, Int] = State(s => (s, s+1))
-    val dec: State[Int, Int] = State(s => (s, s-1))
+    val inc: State[Int, Int] = State(s => (s, s + 1))
+    val dec: State[Int, Int] = State(s => (s, s - 1))
 
     assert(inc.run(1) == (1, 2))
     assert(inc.map(n => n * 3).run(1) == (3, 2))
 
     // (1, 2), (2, 1) => (1+2, 1)
-    assert(inc.map2(dec)((a,b) => a + b).run(1) == (3, 1))
-    assert(inc.map2for(dec)((a,b) => a + b).run(1) == (3, 1))
+    assert(inc.map2(dec)((a, b) => a + b).run(1) == (3, 1))
+    assert(inc.map2for(dec)((a, b) => a + b).run(1) == (3, 1))
     // State[S, List[inc, dec]]
     assert(sequence(List(inc, dec)).run(1) == (List(1, 2), 1))
   }
@@ -104,6 +104,8 @@ class ch6state extends AnyFunSuite {
       // Why do we need (Int, Int) here? it's the end result.
       //   Can't I just take values from Machine or maybe we don't need machine.
       //   The candy and coin values look redundant.
+      //   => But there's no other option since the value A is dependent on S.
+      //      There's no way to initialize the A value with arbitrary values.
       // Why there's no explicit 'run'? because it's hidden in flatMap.
       def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] =
         sequence(inputs map (modify[Machine] _ compose update)).flatMap(
@@ -112,24 +114,23 @@ class ch6state extends AnyFunSuite {
 
     // Coin
     // working
-    assert(Candy.simulateMachine(List(Coin)).run(Machine(true,10,5))._2 == Machine(false,10,6))
+    assert(Candy.simulateMachine(List(Coin)).run(Machine(true, 10, 5))._2 == Machine(false, 10, 6))
 
     // no candy
-    assert(Candy.simulateMachine(List(Coin)).run(Machine(true,0,5))._2 == Machine(true,0,5))
+    assert(Candy.simulateMachine(List(Coin)).run(Machine(true, 0, 5))._2 == Machine(true, 0, 5))
     // already unlocked
-    assert(Candy.simulateMachine(List(Coin)).run(Machine(false,10,5))._2 == Machine(false,10,5))
+    assert(Candy.simulateMachine(List(Coin)).run(Machine(false, 10, 5))._2 == Machine(false, 10, 5))
 
     // Turn
     // working
-    assert(Candy.simulateMachine(List(Turn)).run(Machine(false,10,5))._2 == Machine(true,9,5))
+    assert(Candy.simulateMachine(List(Turn)).run(Machine(false, 10, 5))._2 == Machine(true, 9, 5))
     // locked
-    assert(Candy.simulateMachine(List(Turn)).run(Machine(true,10,5))._2 == Machine(true,10,5))
+    assert(Candy.simulateMachine(List(Turn)).run(Machine(true, 10, 5))._2 == Machine(true, 10, 5))
 
     // Multiple steps
-    assert(Candy.simulateMachine(List(Coin, Turn)).run(Machine(true,10,5))._2 == Machine(true,9,6))
+    assert(Candy.simulateMachine(List(Coin, Turn)).run(Machine(true, 10, 5))._2 == Machine(true, 9, 6))
 
     // No candies
-    assert(Candy.simulateMachine(List(Coin, Turn)).run(Machine(true,0,5))._2 == Machine(true,0,5))
+    assert(Candy.simulateMachine(List(Coin, Turn)).run(Machine(true, 0, 5))._2 == Machine(true, 0, 5))
   }
-
 }
