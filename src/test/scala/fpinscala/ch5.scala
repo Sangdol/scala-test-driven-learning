@@ -299,7 +299,18 @@ class ch5 extends AnyFunSuite {
     def if3[A](cond: Boolean, onTrue: => A, onFalse: => A): A =
       if (cond) onTrue else onFalse
 
+    def if4[A](cond: Boolean, onTrue: A, onFalse: A): A =
+      if (cond) onTrue else onFalse
+
     assert(1 == if3(cond = true, 1, 2))
+    assert(1 == if3(cond = true, 1, {
+      print("this doesn't print")
+      2
+    }))
+    assert(1 == if4(cond = true, 1, {
+      print("this prints")
+      2
+    }))
 
     // "i" is in fact a function call so it evaluates twice.
     def maybeTwice(b: Boolean, i: => Int): Int = if (b) i + i else 0
