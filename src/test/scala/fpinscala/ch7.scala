@@ -12,7 +12,16 @@ object Par {
 
   def run[A](s: ExecutorService)(p: Par[A]): Future[A] = p(s)
 
-  def unit[A](a: => A): Par[A] = (es: ExecutorService) => UnitFuture(a)
+  /**
+   * Isn't `unit` already lazy since it returns Par[A]?
+   *  (Author's answer)
+   *  `unit` is represented as a function that returns a `UnitFuture`,
+   *  which is a simple implementation of `Future` that just wraps a constant value.
+   *  It doesn't use the `ExecutorService` at all.
+   *  It's always done and can't be cancelled.
+   *  Its `get` method simply returns the value that we gave it.
+   */
+  def unit[A](a: A): Par[A] = (es: ExecutorService) => UnitFuture(a)
 
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
@@ -41,6 +50,7 @@ object Par {
   }
 
   // ex 7.4 but the implementation of `fork` is not introduced yet...
+  //
   def asyncF[A,B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
   def map[A,B](pa: Par[A])(f: A => B): Par[B] =
@@ -49,7 +59,7 @@ object Par {
   def sort(p: Par[List[Int]]): Par[List[Int]] = map(p)(_.sorted)
 
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
-    // Why this doesn't work?
+    // Why this doesn't work? (when ch6 sequence does that)
     // ps.foldRight(unit(List[A]))((p, acc) => map2(p, acc)((a, b) => a :: b))
     ps.foldRight[Par[List[A]]](unit(List()))((p, acc) => map2(p, acc)((a, b) => a :: b))
   }
