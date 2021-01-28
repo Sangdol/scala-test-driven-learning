@@ -1,6 +1,6 @@
 package fpinscala
 
-import fpinscala.Par.{Par, parFilter, sequence}
+import fpinscala.Par._
 import org.scalatest.funsuite.AnyFunSuite
 
 import java.util.concurrent.{ExecutorService, Executors, Future, TimeUnit}
@@ -96,6 +96,35 @@ object Par {
       val (l, r) = ints.splitAt(ints.length / 2)
       Par.map2(sum(l), sum(r))(_ + _)
     }
+
+  def par(ints: IndexedSeq[Int])(f: (Int, Int) => Int): Par[Int] =
+    if (ints.size <= 1)
+      Par.unit(ints.headOption getOrElse 0)
+    else {
+      val (l, r) = ints.splitAt(ints.length / 2)
+      Par.map2(par(l)(f), par(r)(f))(f)
+    }
+
+  /**
+   * @param a  a list of paragraphs
+   */
+  def wordCount(a: List[String]): Par[Int] =
+    if (a.size <= 1) {
+      val s = a.headOption getOrElse ""
+      unit(s.trim().split(" ").length)
+    } else {
+      val (l, r) = a.splitAt(a.length / 2)
+      map2(wordCount(l), wordCount(r))(_ + _)
+    }
+
+  def parString(a: List[String])(f: String => Int)(g: (Int, Int) => Int): Par[Int] =
+    if (a.size <= 1) {
+      val s = a.headOption getOrElse ""
+      unit(f(s))
+    } else {
+      val (l, r) = a.splitAt(a.length / 2)
+      map2(parString(l)(f)(g), parString(r)(f)(g))(g)
+    }
 }
 
 class ch7 extends AnyFunSuite {
@@ -161,4 +190,44 @@ class ch7 extends AnyFunSuite {
     assert(pf(es).get == List(2))
   }
 
+  /**
+   * Is there a more general version of the parallel summation function
+   * we wrote at the beginning of this chapter?
+   * Try using it to find the maximum value of an IndexedSeq in parallel.
+   */
+  test("general") {
+    val es = Executors.newSingleThreadExecutor()
+    val paMax: Par[Int] = par(IndexedSeq(1,2,3))(Math.max)
+    assert(paMax(es).get == 3)
+
+    val paMin: Par[Int] = par(IndexedSeq(1,2,3))(Math.min)
+    assert(paMin(es).get == 1)
+  }
+
+  /**
+   * Write a function that takes a list of paragraphs (a List[String])
+   * and returns the total number of words across all paragraphs, in parallel.
+   * Generalize this function as much as possible.
+   *
+   * How could we set the upper limit of the number of parallel tasks?
+   */
+  test("word counter") {
+    val es = Executors.newSingleThreadExecutor()
+    val wcp: Par[Int] = wordCount(List("a b", " c "))
+    assert(wcp(es).get == 3)
+
+    // Generalized version - word count
+    val wcf: String => Int = _.trim().split(" ").length
+    val wcp2: Par[Int] = parString(List("a b", " c "))(wcf)(_ + _)
+    assert(wcp2(es).get == 3)
+
+    // sentence length
+    val sl: String => Int = _.length
+    val slp: Par[Int] = parString(List("a b", " c "))(sl)(_ + _)
+    assert(slp(es).get == 6)
+
+    // min sentence size
+    val msp: Par[Int] = parString(List("a b", " c"))(sl)(Math.min)
+    assert(msp(es).get == 2)
+  }
 }
