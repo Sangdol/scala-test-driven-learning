@@ -137,6 +137,10 @@ object RNG {
   def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
 
+  // different type annotation
+  def sequence3[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight[Rand[List[A]]](unit(List()))((f, acc) => map2(f, acc)(_ :: _))
+
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = rng => {
     def go[B](fs: List[Rand[B]], as: List[B]): Rand[List[B]] = rng => {
         fs match {
