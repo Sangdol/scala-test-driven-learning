@@ -14,6 +14,8 @@ object Par {
 
   /**
    * Isn't `unit` already lazy since it returns Par[A]?
+   *  The argument `a` is strict.
+   *
    *  (Author's answer)
    *  `unit` is represented as a function that returns a `UnitFuture`,
    *  which is a simple implementation of `Future` that just wraps a constant value.
@@ -23,6 +25,8 @@ object Par {
    */
   def unit[A](a: A): Par[A] = (es: ExecutorService) => UnitFuture(a)
 
+  // Why we need `fork` when `unit` is already Par[A]?
+  //   To evaluate the argument in a separated thread.
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   def fork[A](fa: => Par[A]): Par[A] = es => fa(es)
@@ -60,8 +64,8 @@ object Par {
 
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
     // Why this doesn't work? (when ch6 sequence does that)
-    // ps.foldRight(unit(List[A]))((p, acc) => map2(p, acc)((a, b) => a :: b))
-    ps.foldRight[Par[List[A]]](unit(List()))((p, acc) => map2(p, acc)((a, b) => a :: b))
+    // ps.foldRight(unit(List[A]))((p, acc) => map2(p, acc)(_ :: _))
+    ps.foldRight[Par[List[A]]](unit(List()))((h, t) => map2(h, t)(_ :: _))
   }
 
   // Why fork?
@@ -73,8 +77,13 @@ object Par {
     sequence(ps)
   }
 
-  // from the author
+  // From the author - Is this the only answer? looks quite complicated and redundant.
+  //   It would have been able to avoid using the list of a list
+  //   if it used a sentinel value like null
+  //   but Scala doesn't seem to like it.
   def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = fork {
+    // Why do we need `map` here? Can't we just filter?
+    //   We need `map` to apply `asyncF`.
     val ps: List[Par[List[A]]] = as.map(
       asyncF((a: A) => if (f(a)) List(a) else List()))
     map(sequence(ps))(_.flatten)
