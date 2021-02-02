@@ -160,6 +160,7 @@ class ch7 extends AnyFunSuite {
     val es = Executors.newSingleThreadExecutor()
 
     assert(c(es).get == 3)
+    assert(Par.run(es)(c).get == 3)
 
     // How to determine the value that is returned when timeout?
   }
@@ -197,10 +198,10 @@ class ch7 extends AnyFunSuite {
    */
   test("general") {
     val es = Executors.newSingleThreadExecutor()
-    val paMax: Par[Int] = par(IndexedSeq(1,2,3))(Math.max)
+    val paMax: Par[Int] = par(IndexedSeq(1, 2, 3))(Math.max)
     assert(paMax(es).get == 3)
 
-    val paMin: Par[Int] = par(IndexedSeq(1,2,3))(Math.min)
+    val paMin: Par[Int] = par(IndexedSeq(1, 2, 3))(Math.min)
     assert(paMin(es).get == 1)
   }
 
