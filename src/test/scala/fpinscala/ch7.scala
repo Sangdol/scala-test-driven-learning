@@ -3,7 +3,8 @@ package fpinscala
 import fpinscala.Par._
 import org.scalatest.funsuite.AnyFunSuite
 
-import java.util.concurrent.{ExecutorService, Executors, Future, TimeUnit}
+import java.util.concurrent.{ExecutorService, Executors, Future, TimeUnit, TimeoutException}
+import scala.concurrent.duration.Duration
 
 object Par {
   // Why is it okay to alias Par when there's a Par object?
@@ -29,6 +30,7 @@ object Par {
   //   To evaluate the argument in a separated thread.
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
+  // Is it a correct implementation?
   def fork[A](fa: => Par[A]): Par[A] = es => fa(es)
 
   // Why `get` is a value not a function?
@@ -53,8 +55,25 @@ object Par {
     }
   }
 
+  // Can I overload map2 function?
+  def map2timeout[A,B,C](pa: Par[A], pb: Par[B])(f: (A, B) => C)(timeout: Long, unit: TimeUnit): Par[C] = {
+    (es: ExecutorService) => {
+      val af = pa(es) // Future[A]
+      val bf = pb(es)
+
+      // av and bv are not parallel.
+      val duration = Duration(timeout, unit).toMillis
+      val afStart = System.currentTimeMillis()
+      val av = af.get(duration, TimeUnit.MILLISECONDS)
+      val elapsed = System.currentTimeMillis() - afStart
+      val remaining = duration - elapsed
+      val bv = bf.get(remaining, TimeUnit.MILLISECONDS)
+
+      UnitFuture(f(av, bv))
+    }
+  }
+
   // ex 7.4 but the implementation of `fork` is not introduced yet...
-  //
   def asyncF[A,B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
   def map[A,B](pa: Par[A])(f: A => B): Par[B] =
@@ -144,12 +163,15 @@ class ch7 extends AnyFunSuite {
   test("7.3") {
     val pa: Par[Int] = (es: ExecutorService) =>
       es.submit(() => {
-        Thread.sleep(10)
+        Thread.sleep(3)
         1
       })
 
     val pb: Par[Int] = (es: ExecutorService) =>
-      es.submit(() => 2)
+      es.submit(() => {
+        Thread.sleep(4)
+        2
+      })
 
     val f: (Int, Int) => Int = (a, b) => a + b
 
@@ -163,6 +185,9 @@ class ch7 extends AnyFunSuite {
     assert(Par.run(es)(c).get == 3)
 
     // How to determine the value that is returned when timeout?
+    //   No need to return - Future will throw an exception.
+    val d = Par.map2timeout(pa, pb)(f)(5, TimeUnit.MILLISECONDS)
+    assertThrows[TimeoutException](Par.run(es)(d).get)
   }
 
   test("7.5") {
