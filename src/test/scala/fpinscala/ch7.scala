@@ -3,7 +3,7 @@ package fpinscala
 import fpinscala.Par._
 import org.scalatest.funsuite.AnyFunSuite
 
-import java.util.concurrent.{ExecutorService, Executors, Future, TimeUnit, TimeoutException}
+import java.util.concurrent.{Callable, ExecutorService, Executors, Future, TimeUnit, TimeoutException}
 import scala.concurrent.duration.Duration
 
 object Par {
@@ -30,8 +30,10 @@ object Par {
   //   To evaluate the argument in a separated thread.
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
-  // Is it a correct implementation?
-  def fork[A](fa: => Par[A]): Par[A] = es => fa(es)
+  // This takes two threads - one for Callable and another for the inside logic.
+  def fork[A](fa: => Par[A]): Par[A] = es => es.submit(new Callable[A] {
+    def call: A = fa(es).get
+  })
 
   // Why `get` is a value not a function?
   //   It's a shortened form of a function body.
@@ -73,17 +75,16 @@ object Par {
     }
   }
 
-  // ex 7.4 but the implementation of `fork` is not introduced yet...
   def asyncF[A,B](f: A => B): A => Par[B] = a => lazyUnit(f(a))
 
   def map[A,B](pa: Par[A])(f: A => B): Par[B] =
     map2(pa, unit(()))((a, _) => f(a))
 
-  def sort(p: Par[List[Int]]): Par[List[Int]] = map(p)(_.sorted)
+  def sortPar(p: Par[List[Int]]): Par[List[Int]] = map(p)(_.sorted)
 
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
     // Why this doesn't work? (when ch6 sequence does that)
-    // ps.foldRight(unit(List[A]))((p, acc) => map2(p, acc)(_ :: _))
+//     ps.foldRight(unit(List[A]))((p, acc) => map2(p, acc)(_ :: _))
     ps.foldRight[Par[List[A]]](unit(List()))((h, t) => map2(h, t)(_ :: _))
   }
 
@@ -188,6 +189,9 @@ class ch7 extends AnyFunSuite {
     //   No need to return - Future will throw an exception.
     val d = Par.map2timeout(pa, pb)(f)(5, TimeUnit.MILLISECONDS)
     assertThrows[TimeoutException](Par.run(es)(d).get)
+
+    // TODO - implement it using Map2Future
+    // https://www.scala-exercises.org/fp_in_scala/purely_functional_parallelism
   }
 
   test("7.5") {
