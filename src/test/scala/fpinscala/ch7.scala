@@ -173,7 +173,7 @@ class ch7 extends AnyFunSuite {
   test("7.3") {
     val pa: Par[Int] = (es: ExecutorService) =>
       es.submit(() => {
-        Thread.sleep(3)
+        Thread.sleep(10)
         1
       })
 
@@ -218,10 +218,13 @@ class ch7 extends AnyFunSuite {
   }
 
   test("7.6") {
-    val pf = parFilter[Int](List(1, 2, 3))(_ % 2 == 0)
-
     // At least 2 threads are needed for this.
     val es = Executors.newFixedThreadPool(2)
+
+    val pf = parFilter[Int](List(1, 2, 3))(_ % 2 == 0)
+    assert(pf(es).get == List(2))
+
+    val pf2 = parFilterOption[Int](List(1, 2, 3))(_ % 2 == 0)
     assert(pf(es).get == List(2))
   }
 
