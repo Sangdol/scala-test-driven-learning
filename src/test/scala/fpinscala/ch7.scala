@@ -83,9 +83,9 @@ object Par {
   def sortPar(p: Par[List[Int]]): Par[List[Int]] = map(p)(_.sorted)
 
   def sequence[A](ps: List[Par[A]]): Par[List[A]] = {
-    // Why this doesn't work? (when ch6 sequence does that)
-//     ps.foldRight(unit(List[A]))((p, acc) => map2(p, acc)(_ :: _))
-    ps.foldRight[Par[List[A]]](unit(List()))((h, t) => map2(h, t)(_ :: _))
+    ps.foldRight(unit(List[A]()))((p, acc) => map2(p, acc)(_ :: _))
+    // or
+    // ps.foldRight[Par[List[A]]](unit(List()))((h, t) => map2(h, t)(_ :: _))
   }
 
   // Why fork?
@@ -106,6 +106,15 @@ object Par {
     //   We need `map` to apply `asyncF`.
     val ps: List[Par[List[A]]] = as.map(
       asyncF((a: A) => if (f(a)) List(a) else List()))
+    map(sequence(ps))(_.flatten)
+  }
+
+  // This look better than the author's answer - no redundant lists.
+  def parFilterOption[A](as: List[A])(f: A => Boolean): Par[List[A]] = fork {
+    val ps: List[Par[Option[A]]] = as.map(
+      asyncF((a: A) => Some(a).filter(f)))
+
+    // Par[List[Option[A]]]
     map(sequence(ps))(_.flatten)
   }
 
@@ -195,11 +204,12 @@ class ch7 extends AnyFunSuite {
   }
 
   test("7.5") {
-    val pa: Par[Int] = (es: ExecutorService) =>
-      es.submit(() => 1)
+    val pa: Par[Int] = lazyUnit(1)
+    val pb: Par[Int] = lazyUnit(2)
 
-    val pb: Par[Int] = (es: ExecutorService) =>
-      es.submit(() => 2)
+    // This can be used if we want to run ExecutorService.
+//    val pb: Par[Int] = (es: ExecutorService) =>
+//      es.submit(() => 2)
 
     val ps = sequence(List(pa, pb))
 
@@ -208,15 +218,10 @@ class ch7 extends AnyFunSuite {
   }
 
   test("7.6") {
-    val pa: Par[Int] = (es: ExecutorService) =>
-      es.submit(() => 1)
+    val pf = parFilter[Int](List(1, 2, 3))(_ % 2 == 0)
 
-    val pb: Par[Int] = (es: ExecutorService) =>
-      es.submit(() => 2)
-
-    val pf = parFilter[Int](List(1, 2))(_ % 2 == 0)
-
-    val es = Executors.newSingleThreadExecutor()
+    // At least 2 threads are needed for this.
+    val es = Executors.newFixedThreadPool(2)
     assert(pf(es).get == List(2))
   }
 
