@@ -57,6 +57,17 @@ object Par {
     }
   }
 
+  def map3[A,B,C,D](pa: Par[A], pb: Par[B], pc: Par[C])(f: (A,B,C) => D): Par[D] =
+    map2(map2(pa, pb)((a, b) => (c:C) => f(a, b, c)), pc)(_ (_))
+//    map2(map2(pa, pb)((a, b) => (c:C) => f(a, b, c)), pc)((e: C => D, c) => e(c))
+
+  def map4[A,B,C,D,E](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D])(f: (A,B,C,D) => E): Par[E] =
+    map2(map2(map2(pa, pb)((a, b) => (c:C) => (d:D) => f(a, b, c, d)), pc)(_ (_)), pd)(_ (_))
+
+  // seriously?
+  def map5[A,B,C,D,E,F](pa: Par[A], pb: Par[B], pc: Par[C], pd: Par[D], pe: Par[E])(f: (A,B,C,D,E) => F): Par[F] =
+    map2(map2(map2(map2(pa, pb)((a, b) => (c:C) => (d:D) => (e:E) => f(a, b, c, d, e)), pc)(_ (_)), pd)(_ (_)), pe)(_ (_))
+
   // Can I overload map2 function?
   def map2timeout[A,B,C](pa: Par[A], pb: Par[B])(f: (A, B) => C)(timeout: Long, unit: TimeUnit): Par[C] = {
     (es: ExecutorService) => {
@@ -225,7 +236,7 @@ class ch7 extends AnyFunSuite {
     assert(pf(es).get == List(2))
 
     val pf2 = parFilterOption[Int](List(1, 2, 3))(_ % 2 == 0)
-    assert(pf(es).get == List(2))
+    assert(pf2(es).get == List(2))
   }
 
   /**
@@ -248,6 +259,7 @@ class ch7 extends AnyFunSuite {
    * Generalize this function as much as possible.
    *
    * How could we set the upper limit of the number of parallel tasks?
+   *   ExecutorService should have the number of threads.
    */
   test("word counter") {
     val es = Executors.newSingleThreadExecutor()
@@ -268,4 +280,23 @@ class ch7 extends AnyFunSuite {
     val msp: Par[Int] = parString(List("a b", " c"))(sl)(Math.min)
     assert(msp(es).get == 2)
   }
+
+  test("map3, map4, and map5") {
+    val pa: Par[Int] = lazyUnit(1)
+    val pb: Par[Int] = lazyUnit(2)
+    val pc: Par[Int] = lazyUnit(3)
+    val f3: (Int, Int, Int) => Int = (a, b, c) => (a + b) * c
+
+    val es = Executors.newSingleThreadExecutor()
+    assert(Par.run(es)(map3(pa, pb, pc)(f3)).get == 9)
+
+    val pd: Par[Int] = lazyUnit(4)
+    val f4: (Int, Int, Int, Int) => Int = (a, b, c, d) => (a + b) * (c + d)
+    assert(Par.run(es)(map4(pa, pb, pc, pd)(f4)).get == 21)
+
+    val pe: Par[Int] = lazyUnit(5)
+    val f5: (Int, Int, Int, Int, Int) => Int = (a, b, c, d, e) => (a + b) * (c + d) + e
+    assert(Par.run(es)(map5(pa, pb, pc, pd, pe)(f5)).get == 26)
+  }
+
 }
