@@ -137,12 +137,20 @@ object Par {
       Par.map2(sum(l), sum(r))(_ + _)
     }
 
-  def par(ints: IndexedSeq[Int])(f: (Int, Int) => Int): Par[Int] =
+  // monoid
+//  type T such there exist:
+//    1) zero: T // one?
+//    2) f(T, T) => T // f: plus or times
+  //
+  // string is monoid
+  // 1) zero: ""
+  // 2) f: concatenation
+  def par[T](ints: IndexedSeq[T])(f: (T, T) => T)(default: T): Par[T] =
     if (ints.size <= 1)
-      Par.unit(ints.headOption getOrElse 0)
+      Par.unit(ints.headOption getOrElse default)
     else {
       val (l, r) = ints.splitAt(ints.length / 2)
-      Par.map2(par(l)(f), par(r)(f))(f)
+      Par.map2(par(l)(f)(default), par(r)(f)(default))(f)
     }
 
   /**
@@ -164,6 +172,16 @@ object Par {
     } else {
       val (l, r) = a.splitAt(a.length / 2)
       map2(parString(l)(f)(g), parString(r)(f)(g))(g)
+    }
+
+  def parStringMoreGeneric[A, B](a: List[A])(f: A => B)(g: (B, B) => B)(default: A): Par[B] =
+    if (a.size <= 1) {
+      val s = a.headOption getOrElse default
+      unit(f(s))
+    } else {
+      val (l, r) = a.splitAt(a.length / 2)
+      map2(parStringMoreGeneric(l)(f)(g)(default),
+        parStringMoreGeneric(r)(f)(g)(default))(g)
     }
 
   // Even this doesn't use the run() method.
@@ -250,10 +268,10 @@ class ch7 extends AnyFunSuite {
    */
   test("general") {
     val es = Executors.newSingleThreadExecutor()
-    val paMax: Par[Int] = par(IndexedSeq(1, 2, 3))(Math.max)
+    val paMax: Par[Int] = par(IndexedSeq(1, 2, 3))(Math.max)(0)
     assert(paMax(es).get == 3)
 
-    val paMin: Par[Int] = par(IndexedSeq(1, 2, 3))(Math.min)
+    val paMin: Par[Int] = par(IndexedSeq(1, 2, 3))(Math.min)(0)
     assert(paMin(es).get == 1)
   }
 
@@ -283,6 +301,10 @@ class ch7 extends AnyFunSuite {
     // min sentence size
     val msp: Par[Int] = parString(List("a b", " c"))(sl)(Math.min)
     assert(msp(es).get == 2)
+
+    // min sentence size
+    val msp2: Par[Int] = parStringMoreGeneric(List("a b", " c"))(sl)(Math.min)("")
+    assert(msp2(es).get == 2)
   }
 
   test("map3, map4, and map5") {
