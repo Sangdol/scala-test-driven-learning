@@ -165,6 +165,10 @@ object Par {
       val (l, r) = a.splitAt(a.length / 2)
       map2(parString(l)(f)(g), parString(r)(f)(g))(g)
     }
+
+  // Even this doesn't use the run() method.
+  def equal[A](es: ExecutorService)(pa: Par[A], pb: Par[A]): Boolean =
+    pa(es).get == pb(es).get
 }
 
 class ch7 extends AnyFunSuite {
