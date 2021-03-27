@@ -325,4 +325,24 @@ class ch7 extends AnyFunSuite {
     assert(Par.run(es)(map5(pa, pb, pc, pd, pe)(f5)).get == 26)
   }
 
+  /**
+   * Given:  map(y)(id) == y
+   * then: map(unit(x))(f) == unit(f(x))
+   * because "map can't behave differently for different function types it receives"
+   * because "it only pass along what it recieves"
+   *
+   * Given:  map(y)(id) == y
+   * Prove this: map(map(y)(g))(f) == map(y)(f compose g)
+   */
+  test("7.7") {
+    /**
+     * Given:  map(y)(id) == y
+     * then:  map(y)(id1) == id1(y)
+     * then: map(map(y)(id1))(id2) = id2(id1(y)) = map(y)(id2 compose id1)
+     * because id(y) == map(y)(id)
+     *
+     * when id1 = g, id2 = f
+     * then: map(map(y)(g))(f) = id2(id1(y)) = map(y)(f compose g)
+     */
+  }
 }
