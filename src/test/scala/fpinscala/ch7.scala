@@ -329,13 +329,15 @@ class ch7 extends AnyFunSuite {
    * Given:  map(y)(id) == y
    * then: map(unit(x))(f) == unit(f(x))
    * because "map can't behave differently for different function types it receives"
-   * because "it only pass along what it recieves"
+   * because "it only pass along what it receives"
    *
    * Given:  map(y)(id) == y
    * Prove this: map(map(y)(g))(f) == map(y)(f compose g)
    */
   test("7.7") {
     /**
+     * Wrong: circular reasoning
+     *
      * Given:  map(y)(id) == y
      * then:  map(y)(id1) == id1(y)
      * then: map(map(y)(id1))(id2) = id2(id1(y)) = map(y)(id2 compose id1)
@@ -343,6 +345,18 @@ class ch7 extends AnyFunSuite {
      *
      * when id1 = g, id2 = f
      * then: map(map(y)(g))(f) = id2(id1(y)) = map(y)(f compose g)
+     */
+
+    /**
+     * Answer from the blue book: https://github.com/quchen/articles/blob/master/second_functor_law.md
+     *
+     *   f .      g =      p .      q         -- (1) Given this ...
+     *   => fmap f . fmap g = fmap p . fmap q -- (2) ... this holds
+     *
+     * how did the second line deduced?
+     *
+     *   because "map can't behave differently for different function types it receives"
+     *   because "it only pass along what it recieves"
      */
   }
 }
