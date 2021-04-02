@@ -30,6 +30,8 @@ object Par {
   //   To evaluate the argument in a separated thread.
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
+  def delay[A](fa: => Par[A]): Par[A] = es => fa(es)
+
   // This takes two threads - one for Callable and another for the inside logic.
   def fork[A](fa: => Par[A]): Par[A] = es => es.submit(new Callable[A] {
     def call: A = fa(es).get
@@ -251,7 +253,7 @@ class ch7 extends AnyFunSuite {
   }
 
   test("7.6") {
-    // At least 2 threads are needed for this.
+    // At least 2 threads are needed for this. (ex 7.8)
     val es = Executors.newFixedThreadPool(2)
 
     val pf = parFilter[Int](List(1, 2, 3))(_ % 2 == 0)
@@ -358,5 +360,9 @@ class ch7 extends AnyFunSuite {
      *   because "map can't behave differently for different function types it receives"
      *   because "it only pass along what it recieves"
      */
+  }
+
+  test("7.8") {
+    // nested fork?
   }
 }
