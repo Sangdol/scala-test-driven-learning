@@ -189,6 +189,46 @@ object Par {
   // Even this doesn't use the run() method.
   def equal[A](es: ExecutorService)(pa: Par[A], pb: Par[A]): Boolean =
     pa(es).get == pb(es).get
+
+  def choice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    es =>
+      if (run(es)(cond).get) t(es)
+      else f(es)
+
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    es => choices(run(es)(n).get)(es)
+
+  def choiceViaChoiceN[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    choiceN(map(cond)(b => if (b) 0 else 1))(List(t, f))
+
+  def choiceMap[K,V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] =
+    es => choices(run(es)(key).get)(es)
+
+  def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] =
+    es => choices(run(es)(pa).get)(es)
+
+  def chooserChoice[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    chooser(cond)(cond => if (cond) t else f)
+
+  def chooserChoiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    chooser(n)(n => choices(n))
+
+  // Why is this a flatMap or bind?
+  def flatMap[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] =
+    es => choices(run(es)(pa).get)(es)
+
+  def join[A](a: Par[Par[A]]): Par[A] =
+    es => a(es).get()(es)
+
+  def join2[A](a: Par[Par[A]]): Par[A] =
+    es => run(es)(run(es)(a).get)
+
+  // difficult
+  def joinViaFlatMap[A](a: Par[Par[A]]): Par[A] =
+    flatMap(a)(x => x)
+
+  def flatMapViaJoin[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] =
+    join(map(pa)(choices))
 }
 
 class ch7 extends AnyFunSuite {
@@ -363,6 +403,53 @@ class ch7 extends AnyFunSuite {
   }
 
   test("7.8") {
+    // see 7.6
+  }
+
+  test("7.9") {
     // nested fork?
   }
+
+  test("7.10") {
+    // see ch7_2
+  }
+
+  test("7.11") {
+    val n: Par[Int] = lazyUnit(1)
+    val p1: Par[Int] = lazyUnit(10)
+    val p2: Par[Int] = lazyUnit(100)
+    val choices: List[Par[Int]] = List(p1, p2)
+
+    val es = Executors.newSingleThreadExecutor()
+    assert(Par.run(es)(choiceN(n)(choices)).get == 100)
+
+    val n2: Par[Int] = lazyUnit(10)
+    assertThrows[IndexOutOfBoundsException](Par.run(es)(choiceN(n2)(choices)).get)
+  }
+
+  test("7.12") {
+    val key: Par[String] = lazyUnit("key")
+    val p1: Par[Int] = lazyUnit(10)
+    val p2: Par[Int] = lazyUnit(100)
+    // When to omit type a signature?
+    val choices: Map[String, Par[Int]] = Map("key" -> p1, "key2" -> p2)
+
+    val es = Executors.newSingleThreadExecutor()
+    assert(Par.run(es)(choiceMap(key)(choices)).get == 10)
+  }
+
+  test("7.13") {
+    val cond: Par[Boolean] = lazyUnit(true)
+    val p1: Par[Int] = lazyUnit(10)
+    val p2: Par[Int] = lazyUnit(100)
+
+    val es = Executors.newSingleThreadExecutor()
+    assert(Par.run(es)(chooserChoice(cond)(p1, p2)).get == 10)
+
+    val n: Par[Int] = lazyUnit(1)
+    val choices: List[Par[Int]] = List(p1, p2)
+
+    assert(Par.run(es)(chooserChoiceN(n)(choices)).get == 100)
+  }
+
 }

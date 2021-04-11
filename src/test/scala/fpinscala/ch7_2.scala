@@ -97,6 +97,4 @@ class ch7_2 extends AnyFunSuite {
     assert(x2 == 10)
   }
 
-  // TODO next: choice
-
 }
