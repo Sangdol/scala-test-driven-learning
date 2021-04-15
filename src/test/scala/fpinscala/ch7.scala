@@ -214,8 +214,21 @@ object Par {
     chooser(n)(n => choices(n))
 
   // Why is this a flatMap or bind?
+  //  Par is monad
   def flatMap[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] =
     es => choices(run(es)(pa).get)(es)
+
+  def map[A,B](pa: Par[A])(f: A => B): Par[B] =
+    flatMap(pa)(a => unit(f(a)))
+
+  // each monad is applicative functor
+  // but not all applicative functor is monad
+  def map2[A,B,C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
+    flatMap(pa)(a => flatMap(pb)(b => unit(f(a, b))))
+
+  // M is monad
+//  def flatMap2[A,B,M](pa: M[A])(choices: A => M[B]): M[B] =
+//    es => choices(run(es)(pa).get)(es)
 
   def join[A](a: Par[Par[A]]): Par[A] =
     es => a(es).get()(es)
@@ -432,6 +445,7 @@ class ch7 extends AnyFunSuite {
     val p1: Par[Int] = lazyUnit(10)
     val p2: Par[Int] = lazyUnit(100)
     // When to omit type a signature?
+//    val choices = Map("key" -> p1, "key2" -> p2)
     val choices: Map[String, Par[Int]] = Map("key" -> p1, "key2" -> p2)
 
     val es = Executors.newSingleThreadExecutor()
