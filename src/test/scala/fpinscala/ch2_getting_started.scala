@@ -6,7 +6,7 @@ package fpinscala
 
 import org.scalatest.funsuite.AnyFunSuite
 
-class ch2 extends AnyFunSuite {
+class ch2_getting_started extends AnyFunSuite {
 
   test("@tailrec") {
     def factorial(n: Int): Int = {
