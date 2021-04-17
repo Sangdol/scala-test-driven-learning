@@ -326,7 +326,7 @@ class ch5 extends AnyFunSuite {
 
     var counter2 = 0
     assert(24 == maybeTwice2(b = true, {counter2+=1; 12}))
-    assert(counter2 == 1)  // double evaluation
+    assert(counter2 == 1)  // no double evaluation
   }
 
   test("cons") {
