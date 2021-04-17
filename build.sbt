@@ -6,7 +6,8 @@ scalaVersion := "2.13.1"
 
 // What does ++=, %, %% mean?
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.1.0" % "test"
+  "org.scalatest" %% "scalatest" % "3.1.0" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
 )
 
 // https://www.scala-sbt.org/1.x/docs/Howto-Scala.html
