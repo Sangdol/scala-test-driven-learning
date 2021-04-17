@@ -218,12 +218,12 @@ object Par {
   def flatMap[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] =
     es => choices(run(es)(pa).get)(es)
 
-  def map[A,B](pa: Par[A])(f: A => B): Par[B] =
+  def mapViaFlatMap[A,B](pa: Par[A])(f: A => B): Par[B] =
     flatMap(pa)(a => unit(f(a)))
 
   // each monad is applicative functor
   // but not all applicative functor is monad
-  def map2[A,B,C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
+  def map2ViaFlatMap[A,B,C](pa: Par[A], pb: Par[B])(f: (A, B) => C): Par[C] =
     flatMap(pa)(a => flatMap(pb)(b => unit(f(a, b))))
 
   // M is monad
