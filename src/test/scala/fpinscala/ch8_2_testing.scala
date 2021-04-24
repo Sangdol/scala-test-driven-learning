@@ -17,13 +17,50 @@ trait Prop {
 //   Gen.sample.run(RNG.simple(n))...
 // RNG itself can have it's own value. Why do we need a State?
 //   We need a processed value rather than the direct value from RNG.
-case class Gen[A](sample: State[RNG,A]) {
+case class Gen[A](sample: State[RNG,A])
+
+object Gen {
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(State(rng => {
       val (n, nextRng) = nonNegativeInt(rng)
       val res = n % (stopExclusive - start) + start
       (res, nextRng)
     }))
+
+  def unit[A](a: => A): Gen[A] = Gen(State(rng => (a, rng)))
+
+  // answer
+  def unit2[A](a: => A): Gen[A] = Gen(State.unit(a))
+
+  def boolean: Gen[Boolean] =
+    Gen(State(rng => {
+      val (n, nextRng) = nonNegativeInt(rng)
+      (n % 2 == 0, nextRng)
+    }))
+
+  // Can A be a type other than Int when RNG is used?
+  //   That's why we have `g`.
+  // A primitive solution.
+  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
+    Gen(State(rng => {
+      var nextRng = rng
+      var list = List[A]()
+
+      for (_ <- 1 to n) {
+        val (a, n) = g.sample.run(nextRng)
+        nextRng = n
+        list = a :: list
+      }
+
+      (list, nextRng)
+    }))
+
+  // from the blue book
+  // How are the states connected?
+  //   rng is injected anyway and sequence pass accumulator to the next element.
+  // A derived solution.
+  def listOfN2[A](n: Int, g: Gen[A]): Gen[List[A]] =
+    Gen(State.sequence(List.fill(n)(g.sample)))
 }
 
 trait GenTrait[T] {
@@ -72,12 +109,28 @@ class ch8_2_testing extends AnyFunSuite {
   }
 
   test("8.4") {
-    val sample: State[RNG, Int] = State(rng => (1, rng)) // what is this sample for?
-    val gen = Gen(sample)
     val rng = RNG.Simple(seed=1)
-    val random = gen.choose(1, 3).sample.run(rng)._1
+    val random = Gen.choose(1, 3).sample.run(rng)._1
 
     assert(random == 1 || random == 2)
+  }
+
+  test("8.5") {
+    val rng = RNG.Simple(seed=1)
+    assert(Gen.unit(1).sample.run(rng)._1 == 1)
+    assert(Gen.boolean.sample.run(rng)._1)
+
+    val sample: State[RNG, String] = State(rng => {
+      val (n, nextRng) = rng.nextInt
+      (n.toString, nextRng)
+    })
+    val gen = Gen(sample)
+
+    assert(Gen.listOfN(3, gen).sample.run(rng)._1 ==
+      List("-549383847", "-1151252339", "384748"))
+
+    assert(Gen.listOfN2(3, gen).sample.run(rng)._1 ==
+      List("384748", "-1151252339", "-549383847"))
   }
 
 }
