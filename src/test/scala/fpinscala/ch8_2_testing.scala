@@ -27,6 +27,10 @@ object Gen {
       (res, nextRng)
     }))
 
+//  def choosePair(start: Int, stopExclusive: Int): Gen[(Int, Int)] = ???
+
+//  def flatMap[A,B](g: Gen[A])(f: A => Gen[B]): Gen[B] = ???
+
   def unit[A](a: => A): Gen[A] = Gen(State(rng => (a, rng)))
 
   // answer
@@ -131,6 +135,16 @@ class ch8_2_testing extends AnyFunSuite {
 
     assert(Gen.listOfN2(3, gen).sample.run(rng)._1 ==
       List("384748", "-1151252339", "-549383847"))
+  }
+
+  test("Primitive vs. derived") {
+    // If we can generate a single Int in some range,
+    // do we need a new primitive to generate
+    // an (Int,Int) pair in some range?
+    //   ???
+
+    // Can we produce a Gen[Option[A]] from a Gen[A]?
+    // What about a Gen[A] from a Gen[Option[A]]?
   }
 
 }
