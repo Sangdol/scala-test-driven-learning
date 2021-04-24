@@ -5,6 +5,9 @@ import State._
 
 // State is not a state but a state transformer.
 // S is a state.
+// Then what is the use of A?
+//   A can be also a part of a state,
+//   and it can be a value that we're interested in.
 case class State[S,+A](run: S => (A, S)) {
 
   def flatMap[B](f: A => State[S,B]): State[S,B] = State(s => {
@@ -36,6 +39,9 @@ object State {
     sts.foldRight(unit[S,List[A]](List[A]()))((st, acc) => st.map2(acc)(_ :: _))
   }
 
+  // How does `yield ()` return State[S, Unit]?
+  //   That's how flatMat+map and for-comprehension work.
+  //   Look at the implementation of State.map2() and State.map2for().
   def modify[S](f: S => S): State[S, Unit] = for {
     s <- get // Gets the current state and assigns it to `s`.
     _ <- set(f(s)) // Sets the new state to `f` applied to `s`.

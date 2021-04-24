@@ -1,6 +1,7 @@
 package fpinscala
 
 import fpinscala.Prop.{FailedCase, SuccessCount}
+import fpinscala.RNG.nonNegativeInt
 import org.scalatest.funsuite.AnyFunSuite
 
 object Prop {
@@ -12,9 +13,20 @@ trait Prop {
   def check: Either[(FailedCase, SuccessCount),SuccessCount]
 }
 
-case class Gen[A](smaple: State[RNG,A])
+// How to extract a number from Gen?
+//   Gen.sample.run(RNG.simple(n))...
+// RNG itself can have it's own value. Why do we need a State?
+//   We need a processed value rather than the direct value from RNG.
+case class Gen[A](sample: State[RNG,A]) {
+  def choose(start: Int, stopExclusive: Int): Gen[Int] =
+    Gen(State(rng => {
+      val (n, nextRng) = nonNegativeInt(rng)
+      val res = n % (stopExclusive - start) + start
+      (res, nextRng)
+    }))
+}
 
-trait Gen[T] {
+trait GenTrait[T] {
   def listOf[A](a: Gen[A]): Gen[List[A]]
   def listOfN[A](n: Int, a: Gen[A]): Gen[List[A]]
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop
@@ -57,6 +69,15 @@ class ch8_2_testing extends AnyFunSuite {
         def check: Boolean = Prop.this.check && p.check
       }
     }
+  }
+
+  test("8.4") {
+    val sample: State[RNG, Int] = State(rng => (1, rng)) // what is this sample for?
+    val gen = Gen(sample)
+    val rng = RNG.Simple(seed=1)
+    val random = gen.choose(1, 3).sample.run(rng)._1
+
+    assert(random == 1 || random == 2)
   }
 
 }
