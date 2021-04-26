@@ -13,6 +13,7 @@ trait Prop {
   def check: Either[(FailedCase, SuccessCount),SuccessCount]
 }
 
+
 // How to extract a number from Gen?
 //   Gen.sample.run(RNG.simple(n))...
 // RNG itself can have it's own value. Why do we need a State?
@@ -99,15 +100,22 @@ class ch8_2_testing extends AnyFunSuite {
     //  max([n]) == n
     //  max(list) is in list
     //  max(emptyList) => null or exception
+
+    // more
+    //  lastElement(sort(list)) == max(list)
+    //  max(list1 ++ list2) == max([max(list1), max(list2)])
+    //  max(list :: [n]) == max([max(list), n])
+    //  max(tail(list)) == max()
   }
 
   test("8.3") {
     trait Prop {
       def check: Boolean
+      def assert: Unit = if (!check) throw new AssertionError()
 
       // 8.3 - a new way to implement laziness
       def &&(p: Prop): Prop = new Prop {
-        def check: Boolean = Prop.this.check && p.check
+        def check: Boolean = this.check && p.check
       }
     }
   }
