@@ -22,13 +22,33 @@ case class Gen[A](sample: State[RNG,A])
 
 object Gen {
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
-    Gen(State(rng => {
+    Gen(State { rng =>
       val (n, nextRng) = nonNegativeInt(rng)
       val res = n % (stopExclusive - start) + start
       (res, nextRng)
-    }))
+    })
 
-//  def choosePair(start: Int, stopExclusive: Int): Gen[(Int, Int)] = ???
+  def tuple(start: Int, stopExclusive: Int): Gen[(Int, Int)] =
+    {
+      val s = State { rng: RNG =>
+        val (n, nextRng) = nonNegativeInt(rng)
+        val res = n % (stopExclusive - start) + start
+        (res, nextRng)
+      }
+
+      Gen(s.map2(s)((a, b) => (a, b)))
+    }
+
+  def tuple2(start: Int, stopExclusive: Int): Gen[(Int, Int)] =
+    map2(choose(start, stopExclusive), choose(start, stopExclusive))((_,_))
+
+  def tuple3(start: Int, stopExclusive: Int): Gen[(Int, Int)] = {
+    val c = choose(start, stopExclusive)
+    map2(c, c)((_, _))
+  }
+
+  def map2[A,B,C](a: Gen[A], b: Gen[B])(f: (A,B) => C): Gen[C] =
+    Gen(a.sample.map2(b.sample)(f))
 
 //  def flatMap[A,B](g: Gen[A])(f: A => Gen[B]): Gen[B] = ???
 
@@ -149,7 +169,19 @@ class ch8_2_testing extends AnyFunSuite {
     // If we can generate a single Int in some range,
     // do we need a new primitive to generate
     // an (Int,Int) pair in some range?
-    //   ???
+    //   (start, stop) -> (int, int)
+    val rng = RNG.Simple(seed=1)
+    val randomPair = Gen.tuple(1, 5)
+      .sample.run(rng)._1
+
+    assert(randomPair == (1, 4))
+
+    val randomPair2 = Gen.tuple2(1, 100)
+      .sample.run(rng)._1
+    val randomPair3 = Gen.tuple3(1, 100)
+      .sample.run(rng)._1
+
+    assert(randomPair2 == randomPair3)
 
     // Can we produce a Gen[Option[A]] from a Gen[A]?
     // What about a Gen[A] from a Gen[Option[A]]?
