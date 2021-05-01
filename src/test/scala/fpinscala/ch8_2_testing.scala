@@ -93,6 +93,51 @@ object Gen {
       (n % 2 == 0, nextRng)
     }))
 
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
+    boolean.flatMap(b => if (b) g1 else g2)
+
+  // w1, w2 = turnToInt(g1w, g2w)
+  // choose(w1, w1+w2).flatMap(a => if (a < w1) g1 else g2)
+  // or
+  // choose(0, intMax) - scale down to w1+w2
+  // or
+  // random.gen(w1+w2)
+  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = {
+    val (ga1, w1) = g1
+    val (ga2, w2) = g2
+
+    val r = util.Random.nextDouble
+
+    if ((w1+w2)*r < w1) ga1 else ga2
+  }
+
+  def weighted2[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] =
+    choose(Int.MinValue, Int.MaxValue).flatMap { n =>
+      val (ga1, w1) = g1
+      val (ga2, w2) = g2
+      val scaled = n * (w1 + w2) / (Int.MaxValue - Int.MinValue)
+
+      if (scaled < w1) ga1 else ga2
+    }
+
+  // from the blue book
+  def weighted3[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = {
+    // ABS?
+    val g1Threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
+
+    // The code in the book is a bit wrong. (returning g1._1.sample)
+    // Should we take the value from RNG?
+    Gen(State(RNG.double)).flatMap(d =>
+      if (d < g1Threshold) g1._1 else g2._1)
+  }
+
+  def chooseDouble(start: Double, stopExclusive: Double): Gen[Double] =
+    Gen(State { rng =>
+      val (n, nextRng) = nonNegativeInt(rng)
+      val res = n % (stopExclusive - start) + start
+      (res, nextRng)
+    })
+
   // Can A be a type other than Int when RNG is used?
   //   That's why we have `g`.
   // A primitive solution.
@@ -227,15 +272,36 @@ class ch8_2_testing extends AnyFunSuite {
   }
 
   test("8.6") {
-    val rng = RNG.Simple(seed=1)
     val sample: State[RNG, String] = State(rng => {
       val (n, nextRng) = rng.nextInt
       (n.toString, nextRng)
     })
     val gen = Gen(sample)
 
+    val rng = RNG.Simple(seed=1)
+
     assert(gen.listOfN(Gen.unit(3)).sample.run(rng)._1 ==
       List("-549383847", "-1151252339", "384748"))
+  }
+
+  test("8.7") {
+    val gen1 = Gen(State.unit(1))
+    val gen2 = Gen(State.unit(2))
+
+    val rng = RNG.Simple(seed=1)
+
+    val union = Gen.union(gen1, gen2).sample.run(rng)._1
+    assert(union == 1 || union == 2)
+  }
+
+  test("8.8") {
+    val gen1 = Gen(State.unit(1))
+    val gen2 = Gen(State.unit(2))
+
+    val rng = RNG.Simple(seed=1)
+
+    val union = Gen.weighted((gen1, 0.0), (gen2, 0.2)).sample.run(rng)._1
+    assert(union == 2)
   }
 
 }
