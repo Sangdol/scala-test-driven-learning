@@ -18,7 +18,42 @@ trait Prop {
 //   Gen.sample.run(RNG.simple(n))...
 // RNG itself can have it's own value. Why do we need a State?
 //   We need a processed value rather than the direct value from RNG.
-case class Gen[A](sample: State[RNG,A])
+case class Gen[A](sample: State[RNG,A]) {
+  def map2[B,C](b: Gen[B])(f: (A,B) => C): Gen[C] =
+    Gen(this.sample.map2(b.sample)(f))
+
+  def mapViaMap2[B](f: A => B): Gen[B] =
+    this.map2(Gen.unit())((a,_) => f(a))
+
+  def map[B](f: A => B): Gen[B] =
+    Gen(this.sample.map(f))
+
+  def flatMap[B](f: A => Gen[B]): Gen[B] =
+    Gen(this.sample.flatMap(f(_).sample))
+
+  // Difficult
+  // What does it do?
+  //   It generates `size` random numbers.
+  // Why do we use flatMap here?
+  //   Because flatMap can turn Gen[Int] to Gen[List[A]].
+  // But flatMap will take A from this (Gen)? Where do we use the A?
+  //   We generate `size` As.
+  // But A will be provided as a value. Where do we use it?
+  //   We don't need to explicitly use it. It'll be the first value of List[A].
+  // How to turn A to List[A]?
+  //   State.sequence
+  // How to get int size from Gen size?
+  //   size.flatMap
+  // Why is it Gen[Int] instead of Int?
+  //   We want to see how dependent Gen works.
+  // What does Gen[Int] and Gen[List[A]] mean?
+  //   Gen[Int]: it generates an int.
+  //   Gen[List[A]]: it generates a list of A.
+  // Who decide the value of A?
+  //   RNG
+  def listOfN(size: Gen[Int]): Gen[List[A]] =
+    size.flatMap(Gen.listOfN(_, this))
+}
 
 object Gen {
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
@@ -40,17 +75,12 @@ object Gen {
     }
 
   def tuple2(start: Int, stopExclusive: Int): Gen[(Int, Int)] =
-    map2(choose(start, stopExclusive), choose(start, stopExclusive))((_,_))
+    choose(start, stopExclusive).map2(choose(start, stopExclusive))((_,_))
 
   def tuple3(start: Int, stopExclusive: Int): Gen[(Int, Int)] = {
     val c = choose(start, stopExclusive)
-    map2(c, c)((_, _))
+    c.map2(c)((_, _))
   }
-
-  def map2[A,B,C](a: Gen[A], b: Gen[B])(f: (A,B) => C): Gen[C] =
-    Gen(a.sample.map2(b.sample)(f))
-
-//  def flatMap[A,B](g: Gen[A])(f: A => Gen[B]): Gen[B] = ???
 
   def unit[A](a: => A): Gen[A] = Gen(State(rng => (a, rng)))
 
@@ -90,7 +120,6 @@ object Gen {
 
 trait GenTrait[T] {
   def listOf[A](a: Gen[A]): Gen[List[A]]
-  def listOfN[A](n: Int, a: Gen[A]): Gen[List[A]]
   def forAll[A](gen: Gen[A])(f: A => Boolean): Prop
 }
 
@@ -183,8 +212,30 @@ class ch8_2_testing extends AnyFunSuite {
 
     assert(randomPair2 == randomPair3)
 
-    // Can we produce a Gen[Option[A]] from a Gen[A]?
+    // Can we produce a Gen[Option[A]] from a Gen[A]? Yes. Map.
     // What about a Gen[A] from a Gen[Option[A]]?
+    //   No, because an Option might not have a value.
+    val genOption = Gen.unit(1).map(a => Option(a))
+
+    assert(genOption.sample.run(rng)._1.get == 1)
+
+    // Can we generate strings somehow using our existing primitives?
+    //   Yes. Map.
+    val genStr = Gen.unit(1).map(a => a.toString)
+
+    assert(genStr.sample.run(rng)._1 == "1")
+  }
+
+  test("8.6") {
+    val rng = RNG.Simple(seed=1)
+    val sample: State[RNG, String] = State(rng => {
+      val (n, nextRng) = rng.nextInt
+      (n.toString, nextRng)
+    })
+    val gen = Gen(sample)
+
+    assert(gen.listOfN(Gen.unit(3)).sample.run(rng)._1 ==
+      List("-549383847", "-1151252339", "384748"))
   }
 
 }
