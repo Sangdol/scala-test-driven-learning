@@ -194,4 +194,14 @@ class FunctionTest extends AnyFunSuite {
 
     assert(fun(3)(4) == 12)
   }
+
+  test("apply") {
+    val one = () => 1
+
+    assert(one.apply() == 1)
+
+    def two(): Int = 2
+
+    assert((two _).apply() == 2)
+  }
 }
