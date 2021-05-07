@@ -20,16 +20,16 @@ trait Prop {
 //   We need a processed value rather than the direct value from RNG.
 case class Gen[A](sample: State[RNG,A]) {
   def map2[B,C](b: Gen[B])(f: (A,B) => C): Gen[C] =
-    Gen(this.sample.map2(b.sample)(f))
+    Gen(sample.map2(b.sample)(f))
 
   def mapViaMap2[B](f: A => B): Gen[B] =
-    this.map2(Gen.unit())((a,_) => f(a))
+    map2(Gen.unit())((a,_) => f(a))
 
   def map[B](f: A => B): Gen[B] =
-    Gen(this.sample.map(f))
+    Gen(sample.map(f))
 
   def flatMap[B](f: A => Gen[B]): Gen[B] =
-    Gen(this.sample.flatMap(f(_).sample))
+    Gen(sample.flatMap(f(_).sample))
 
   // Difficult
   // What does it do?
@@ -106,6 +106,8 @@ object Gen {
     val (ga1, w1) = g1
     val (ga2, w2) = g2
 
+    // This is not purely functional
+    // because this breaks referential transparency.
     val r = util.Random.nextDouble
 
     if ((w1+w2)*r < w1) ga1 else ga2
