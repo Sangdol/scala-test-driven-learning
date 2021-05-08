@@ -65,4 +65,20 @@ class SeqAndListTest extends AnyFunSuite {
     assert(List.fill(2)({1 + 2}) == List(3, 3))
   }
 
+  test("fold, unfold") {
+    assert(List(1, 2, 3).fold(100)(_ + _) == 106)
+
+    // unfold[A, S](init: S)(f: S => Option[(A, S)]): CC[A]
+    // A: value
+    // S: conditional value
+    // CC: container (List)
+    assert(List.unfold(2)(n => if (n > 0) Some(n+1, n-1) else None) ==
+      List(3, 2))
+
+    // This will run infinitely if it were List
+    // since there's no condition to stop it.
+    assert(LazyList.unfold(100)(n => Some((1, n+10))).take(2) ==
+      LazyList(1, 1))
+  }
+
 }
