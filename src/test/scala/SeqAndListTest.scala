@@ -90,4 +90,8 @@ class SeqAndListTest extends AnyFunSuite {
     assert(List(1,2).find(_ == 1).getOrElse(None) == 1)
   }
 
+  test("from") {
+    assert(LazyList.from(0).take(3) == List(0,1,2))
+  }
+
 }
