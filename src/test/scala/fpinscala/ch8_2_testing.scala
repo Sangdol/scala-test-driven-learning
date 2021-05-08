@@ -1,18 +1,75 @@
 package fpinscala
 
-import fpinscala.Prop.{FailedCase, SuccessCount}
+import fpinscala.Prop.{FailedCase, SuccessCount, TestCases, forAll}
 import fpinscala.RNG.nonNegativeInt
 import org.scalatest.funsuite.AnyFunSuite
+
+case class Prop(run: (TestCases,RNG) => Result) {
+
+  // where is `max` from in the blue book solution?
+  // What is Prop.check for?
+  // Difficult
+  def &&(p: Prop): Prop = Prop {
+    (n,rng) => run(n,rng) match {
+      case Passed => p.run(n, rng)
+      case x => x
+    }
+  }
+
+  def ||(p: Prop): Prop = Prop {
+    (n,rng) => run(n,rng) match {
+      case Falsified(msg, _) => p.tag(msg).run(n, rng)
+      case x => x
+    }
+  }
+
+  def tag(msg: String): Prop = Prop {
+    (n,rng) => run(n,rng) match {
+      case Falsified(failure, successes) => Falsified(msg + "\n" + failure, successes)
+      case x => x
+    }
+  }
+
+}
 
 object Prop {
   type FailedCase = String
   type SuccessCount = Int
+  type TestCases = Int
+
+  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+    (n,rng) => randomStream(as)(rng).zip(LazyList.from(0)).take(n).map {
+      case (a, i) => try {
+        if (f(a)) Passed else Falsified(a.toString, i)
+      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+    }.find(_.isFalsified).getOrElse{Passed}
+  }
+
+  def randomStream[A](g: Gen[A])(rng: RNG): LazyList[A] =
+    LazyList.unfold(rng)(rng => Some(g.sample.run(rng)))
+
+  def buildMsg[A](s: A, e: Exception): String =
+    s"test case: $s\n" +
+      s"generated an exception: ${e.getMessage}" +
+      s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 }
 
-trait Prop {
+// "It's nothing more than a non-strict Either." What does it mean by non-strict?
+trait PropTrait {
   def check: Either[(FailedCase, SuccessCount),SuccessCount]
+  def listOf[A](a: Gen[A]): Gen[List[A]]
 }
 
+sealed trait Result {
+  def isFalsified: Boolean
+}
+case object Passed extends Result {
+  // why the book doesn't have 'override'?
+  override def isFalsified: Boolean = false
+}
+case class Falsified(failure: FailedCase, successes: SuccessCount) extends Result {
+  override def isFalsified: Boolean = true
+}
 
 // How to extract a number from Gen?
 //   Gen.sample.run(RNG.simple(n))...
@@ -165,11 +222,6 @@ object Gen {
     Gen(State.sequence(List.fill(n)(g.sample)))
 }
 
-trait GenTrait[T] {
-  def listOf[A](a: Gen[A]): Gen[List[A]]
-  def forAll[A](gen: Gen[A])(f: A => Boolean): Prop
-}
-
 class ch8_2_testing extends AnyFunSuite {
   test("8.1") {
     // Reversing a list and summing it should give the same result as
@@ -304,6 +356,23 @@ class ch8_2_testing extends AnyFunSuite {
 
     val union = Gen.weighted((gen1, 0.0), (gen2, 0.2)).sample.run(rng)._1
     assert(union == 2)
+  }
+
+  test("8.9") {
+    val gen1 = Gen(State.unit(1))
+    val gen2 = Gen(State.unit(2))
+
+    val rng = RNG.Simple(seed=1)
+
+    val prop = forAll(gen1)(_ > 0) && forAll(gen2)(_ > 0)
+
+    assert(prop.run(2, rng) == Passed)
+
+    val prop2 = forAll(gen1)(_ < 0) && forAll(gen2)(_ < 0)
+    assert(prop2.run(2, rng) == Falsified("1", 0))
+
+    val prop3 = forAll(gen1)(_ < 0) || forAll(gen2)(_ < 0)
+    assert(prop3.run(2, rng) == Falsified("1\n2", 0))
   }
 
 }
