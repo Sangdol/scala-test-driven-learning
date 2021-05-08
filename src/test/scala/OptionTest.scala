@@ -13,4 +13,8 @@ class OptionTest extends AnyFunSuite {
     assert(two.map(f).getOrElse(DEFAULT) == 3)
   }
 
+  test("get") {
+    assertThrows[Exception](None.get)
+  }
+
 }
