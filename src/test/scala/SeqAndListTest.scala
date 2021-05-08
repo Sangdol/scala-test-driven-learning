@@ -81,4 +81,13 @@ class SeqAndListTest extends AnyFunSuite {
       LazyList(1, 1))
   }
 
+  test("zip") {
+    assert(List(1,2).zip(List(2,1)) == List((1,2), (2,1)))
+  }
+
+  test("find") {
+    assert(List(1,2).find(_ == 3).getOrElse(None) == None)
+    assert(List(1,2).find(_ == 1).getOrElse(None) == 1)
+  }
+
 }
