@@ -88,13 +88,20 @@ case class Falsified(failure: FailedCase, successes: SuccessCount)
 case class SGen[A](forSize: Int => Gen[A]) {
 
   def map[B](f: A => B): SGen[B] =
-    SGen(forSize(_).map(f))
+    SGen(forSize(_) map f)
+
+  def mapFromBlue[B](f: A => B): SGen[B] =
+    SGen(forSize andThen (_ map f))
 
   def map2[B, C](b: SGen[B])(f: (A, B) => C): SGen[C] =
     SGen(s => forSize(s).map2(b.forSize(s))(f))
 
   def flatMap[B](f: A => SGen[B]): SGen[B] =
     SGen(s => forSize(s).flatMap(f(_).forSize(s)))
+
+  // Is this a right signature?
+  def flatMapFromBlue[B](f: A => Gen[B]): SGen[B] =
+    SGen(forSize andThen (_ flatMap f))
 
 }
 
@@ -429,6 +436,16 @@ class ch8_2_testing extends AnyFunSuite {
     assert(
       sgen1
         .flatMap(n => Gen(State.unit(n * 2)).unsized)
+        .forSize(ANY)
+        .sample
+        .run(rng)
+        ._1 == 2
+    )
+
+    // flatMap from Blue book
+    assert(
+      sgen1
+        .flatMapFromBlue(n => Gen(State.unit(2)))
         .forSize(ANY)
         .sample
         .run(rng)
