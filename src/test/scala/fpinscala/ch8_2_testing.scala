@@ -83,11 +83,29 @@ case class Falsified(failure: FailedCase, successes: SuccessCount)
   override def isFalsified: Boolean = true
 }
 
+// Covariant Type A occurs in invariant position
+//case class SGen[+A](forSize: Int => Gen[A])
+case class SGen[A](forSize: Int => Gen[A]) {
+
+  def map[B](f: A => B): SGen[B] =
+    SGen(forSize(_).map(f))
+
+  def map2[B, C](b: SGen[B])(f: (A, B) => C): SGen[C] =
+    SGen(s => forSize(s).map2(b.forSize(s))(f))
+
+  def flatMap[B](f: A => SGen[B]): SGen[B] =
+    SGen(s => forSize(s).flatMap(f(_).forSize(s)))
+
+}
+
 // How to extract a number from Gen?
 //   Gen.sample.run(RNG.simple(n))...
 // RNG itself can have it's own value. Why do we need a State?
 //   We need a processed value rather than the direct value from RNG.
 case class Gen[A](sample: State[RNG, A]) {
+
+  def unsized: SGen[A] = SGen(_ => this)
+
   def map2[B, C](b: Gen[B])(f: (A, B) => C): Gen[C] =
     Gen(sample.map2(b.sample)(f))
 
@@ -387,6 +405,35 @@ class ch8_2_testing extends AnyFunSuite {
 
     val prop3 = forAll(gen1)(_ < 0) || forAll(gen2)(_ < 0)
     assert(prop3.run(2, rng) == Falsified("1\n2", 0))
+  }
+
+  test("8.10") {
+    val gen = Gen(State.unit(1))
+
+    assert(gen.unsized.getClass.getSimpleName == "SGen")
+  }
+
+  test("8.11") {
+    val sgen1 = Gen(State.unit(1)).unsized
+    val rng = RNG.Simple(seed = 1)
+    val ANY = 0
+
+    // map
+    assert(sgen1.map(_ * 2).forSize(ANY).sample.run(rng)._1 == 2)
+
+    // map2
+    val sgen2 = Gen(State.unit(2)).unsized
+    assert(sgen1.map2(sgen2)(_ * _).forSize(ANY).sample.run(rng)._1 == 2)
+
+    // flatMap
+    assert(
+      sgen1
+        .flatMap(n => Gen(State.unit(n * 2)).unsized)
+        .forSize(ANY)
+        .sample
+        .run(rng)
+        ._1 == 2
+    )
   }
 
 }
