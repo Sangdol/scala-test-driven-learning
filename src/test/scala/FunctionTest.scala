@@ -215,4 +215,12 @@ class FunctionTest extends AnyFunSuite {
     assert((f _ compose g)("hello") == "f(g(hello))")
     assert((f _ andThen g)("hello") == "g(f(hello))")
   }
+
+  test("Placeholder syntax (underscore)") {
+    val as = List(1, 2, 3)
+    assert(as.filter(_ > 1) == as.filter(a => a > 1))
+
+    val f = (_: Int) + (_: Int)
+    assert(f(2, 3) == 5)
+  }
 }
