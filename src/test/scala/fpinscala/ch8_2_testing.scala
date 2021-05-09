@@ -85,6 +85,7 @@ case class Falsified(failure: FailedCase, successes: SuccessCount)
 
 // Covariant Type A occurs in invariant position
 //case class SGen[+A](forSize: Int => Gen[A])
+// What is the difference between size and TestCases?
 case class SGen[A](forSize: Int => Gen[A]) {
 
   def map[B](f: A => B): SGen[B] =
