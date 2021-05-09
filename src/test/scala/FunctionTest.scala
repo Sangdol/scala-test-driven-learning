@@ -3,7 +3,7 @@ import org.scalatest.funsuite.AnyFunSuite
 class FunctionTest extends AnyFunSuite {
 
   test("Anonymous function") {
-    assert(((x: Int) => x * x) (3) === 9)
+    assert(((x: Int) => x * x)(3) === 9)
 
     // underscore (positional match)
     assert((1 to 3).map(_ * 2) === Array(2, 4, 6))
@@ -56,13 +56,13 @@ class FunctionTest extends AnyFunSuite {
   }
 
   test("Default and named arguments") {
-    def decorate(str: String, left: String = "[", right: String = "]")  = {
+    def decorate(str: String, left: String = "[", right: String = "]") = {
       left + str + right
     }
 
     assert(decorate("abc") == "[abc]")
     assert(decorate("abc", "<", ">") == "<abc>")
-    assert(decorate(str="abc", right="<", left=">") == ">abc<")
+    assert(decorate(str = "abc", right = "<", left = ">") == ">abc<")
   }
 
   test("Variable arguments") {
@@ -203,5 +203,16 @@ class FunctionTest extends AnyFunSuite {
     def two(): Int = 2
 
     assert((two _).apply() == 2)
+  }
+
+  /**
+    * https://twitter.github.io/scala_school/pattern-matching-and-functional-composition.html
+    */
+  test("composition") {
+    def f(s: String) = s"f($s)"
+    def g(s: String) = s"g($s)"
+
+    assert((f _ compose g)("hello") == "f(g(hello))")
+    assert((f _ andThen g)("hello") == "g(f(hello))")
   }
 }
