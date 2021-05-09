@@ -103,6 +103,9 @@ case class SGen[A](forSize: Int => Gen[A]) {
   def flatMapFromBlue[B](f: A => Gen[B]): SGen[B] =
     SGen(forSize andThen (_ flatMap f))
 
+  // listOf[A] ???
+  def listOf(g: Gen[A]): SGen[List[A]] =
+    SGen(n => g.listOfN(n))
 }
 
 // How to extract a number from Gen?
@@ -147,6 +150,9 @@ case class Gen[A](sample: State[RNG, A]) {
   //   RNG
   def listOfN(size: Gen[Int]): Gen[List[A]] =
     size.flatMap(Gen.listOfN(_, this))
+
+  def listOfN(size: Int): Gen[List[A]] =
+    Gen.listOfN(size, this)
 }
 
 object Gen {
@@ -453,4 +459,15 @@ class ch8_2_testing extends AnyFunSuite {
     )
   }
 
+  test("8.12") {
+    val sgen = Gen(State.unit(1)).unsized
+    val rng = RNG.Simple(seed = 1)
+    val SIZE = 3
+
+    // What is the use of the value of sgen here?
+    assert(
+      sgen.listOf(Gen(State.unit(2))).forSize(SIZE).sample.run(rng)._1 ==
+        List(2, 2, 2)
+    )
+  }
 }
