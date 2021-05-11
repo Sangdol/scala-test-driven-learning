@@ -183,4 +183,13 @@ class SyntaxTest extends AnyFunSuite {
     assert(matchTestWithList(List(1, 2)) == List(1))
     assert(matchTestWithList(List(1, 2, 3)) == List(1))
   }
+
+  test("for comprehensions") {
+    // https://docs.scala-lang.org/tour/for-comprehensions.html
+    val evens =
+      for (ns <- List(1, 2, 3) if ns % 2 == 0)
+      yield ns
+
+    assert(evens == List(2))
+  }
 }
