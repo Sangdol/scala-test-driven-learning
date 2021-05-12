@@ -66,6 +66,7 @@ object Prop {
 }
 
 // "It's nothing more than a non-strict Either." What does it mean by non-strict?
+//    non-strict in terms of laziness since it's def (method) rather than val
 trait PropTrait {
   def check: Either[(FailedCase, SuccessCount), SuccessCount]
   def listOf[A](a: Gen[A]): Gen[List[A]]
@@ -84,9 +85,10 @@ case class Falsified(failure: FailedCase, successes: SuccessCount)
 }
 
 // Covariant Type A occurs in invariant position
-//case class SGen[+A](forSize: Int => Gen[A])
+// case class SGen[+A](forSize: Int => Gen[A])
+//   -> Gen has to be covariant
 // What is the difference between size and TestCases?
-case class SGen[A](forSize: Int => Gen[A]) {
+case class SGen[+A](forSize: Int => Gen[A]) {
 
   def map[B](f: A => B): SGen[B] =
     SGen(forSize(_) map f)
@@ -104,8 +106,7 @@ case class SGen[A](forSize: Int => Gen[A]) {
   def flatMapFromBlue[B](f: A => Gen[B]): SGen[B] =
     SGen(forSize andThen (_ flatMap f))
 
-  // listOf[A] ???
-  def listOf(g: Gen[A]): SGen[List[A]] =
+  def listOf[B](g: Gen[B]): SGen[List[B]] =
     SGen(n => g.listOfN(n))
 }
 
@@ -113,7 +114,7 @@ case class SGen[A](forSize: Int => Gen[A]) {
 //   Gen.sample.run(RNG.simple(n))...
 // RNG itself can have it's own value. Why do we need a State?
 //   We need a processed value rather than the direct value from RNG.
-case class Gen[A](sample: State[RNG, A]) {
+case class Gen[+A](sample: State[RNG, A]) {
 
   def unsized: SGen[A] = SGen(_ => this)
 
