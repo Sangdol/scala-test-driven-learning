@@ -1,17 +1,13 @@
 import org.scalatest.funsuite.AnyFunSuite
-import Helper._
 
 import scala.language.existentials
 
-object Helper {
+class TypeTest extends AnyFunSuite {
   // https://stackoverflow.com/a/19388313/524588
   def manOf[T: Manifest](t: T): Manifest[T] = manifest[T]
 
   def shortManOf[T: Manifest](t: T): String =
     manOf(t).toString.split('.').last
-}
-
-class TypeTest extends AnyFunSuite {
 
   test("getClass") {
     assert(Nil.getClass.toString == "class scala.collection.immutable.Nil$")
@@ -41,6 +37,8 @@ class TypeTest extends AnyFunSuite {
     // since the function call cannot infer the type
     // as Scala uses Local Type Inference unlike Haskell.
     def factorial(a: Int): Int = if (a <= 1) 1 else a * factorial(a - 1)
+
+    assert(factorial(3) == 6)
   }
 
   test("sub-typing") {
