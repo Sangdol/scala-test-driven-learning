@@ -291,11 +291,19 @@ class SyntaxTest extends AnyFunSuite {
     class Human(val name: String, val age: Int)
 
     object Profile {
-      def unapply(h: Human): Option[(String, Int)] = Some((h.name, h.age))
+      def unapply(h: Human): Some[(String, Int)] = Some((h.name, h.age))
     }
 
     val Profile(name, age) = new Human("Sang", 37)
     assert(name == "Sang")
     assert(age == 37)
+  }
+
+  test("Byname parameter") {
+    def incBlock(x: () => Int): Int = x() + 1
+    assert(incBlock({ () => 1 + 1 }) == 3)
+
+    def incByName(x: => Int): Int = x + 1
+    assert(incByName({ 1 + 1 }) == 3)
   }
 }
