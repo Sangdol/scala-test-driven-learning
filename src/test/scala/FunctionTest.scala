@@ -35,10 +35,10 @@ class FunctionTest extends AnyFunSuite {
   }
 
   test("Parameter inference") {
-    def valueAtOneQuater(f: (Double) => Double) = f(0.25)
+    def valueAtOneQuater(f: Double => Double) = f(0.25)
 
     assert(valueAtOneQuater((x: Double) => x * 2) == 0.5)
-    assert(valueAtOneQuater((x) => x * 2) == 0.5)
+    assert(valueAtOneQuater((x: Double) => x * 2) == 0.5)
     assert(valueAtOneQuater(x => x * 2) == 0.5)
     assert(valueAtOneQuater(_ * 2) == 0.5)
   }
@@ -76,6 +76,7 @@ class FunctionTest extends AnyFunSuite {
 
     // _*: Range to argument sequence
     assert(sum(1 to 3: _*) == 6)
+    assert(sum(List(1, 2, 3): _*) == 6)
 
     def recursiveSum(args: Int*): Int = {
       if (args.isEmpty) 0
@@ -83,6 +84,7 @@ class FunctionTest extends AnyFunSuite {
     }
 
     assert(recursiveSum(1 to 3: _*) == 6)
+    assert(recursiveSum(1, 2, 3) == 6)
   }
 
   test("Function call") {
@@ -119,7 +121,7 @@ class FunctionTest extends AnyFunSuite {
     val fun = math.ceil _
     assert(fun(1.1) == 2)
 
-    val explicitFun: (Double) => Double = math.ceil
+    val explicitFun: Double => Double = math.ceil
     assert(explicitFun(1.1) == 2)
 
     // Class methods
@@ -147,14 +149,14 @@ class FunctionTest extends AnyFunSuite {
     // --> This is a method that has a static value which is a function
     //     This method need to be called without ().
     //     https://docs.scala-lang.org/tour/basics.html#methods
-    def add2: (Int) => Int = (n) => n + 2
+    def add2: Int => Int = n => n + 2
     assert(add2(1) == 3)
 
     val f2 = add2
     assert(f2(1) == 3)
 
     // This is a normal way to define a function.
-    val add2_1: (Int) => Int = (n) => n + 2
+    val add2_1: Int => Int = (n: Int) => n + 2
     val f2_1 = add2_1
 
     assert(f2_1(1) == 3)
@@ -168,7 +170,7 @@ class FunctionTest extends AnyFunSuite {
     assert(f3(1) == 4)
 
     // multiline function
-    val add4: (Int) => Int = (n) => {
+    val add4: Int => Int = (n: Int) => {
       n + 4
     }
 
