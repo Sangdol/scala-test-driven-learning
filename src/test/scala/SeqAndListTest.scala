@@ -65,6 +65,18 @@ class SeqAndListTest extends AnyFunSuite {
     // 5,3,0
     // 6,5,3,0
     assert(List(1, 2, 3).scanRight(0)(_ + _) == List(6, 5, 3, 0))
+
+    assert((0 to 2).sum == 3)
+
+    val it = (0 to 2) grouped 2
+    assert(it.next == List(0, 1))
+    assert(it.next == List(2))
+    assert(it.isEmpty)
+
+    val it2 = (0 to 2) sliding 2
+    assert(it2.next == List(0, 1))
+    assert(it2.next == List(1, 2))
+    assert(it2.isEmpty)
   }
 
   test("List Factory") {
@@ -119,6 +131,7 @@ class SeqAndListTest extends AnyFunSuite {
     val nb: List[Int] = Nil
 
     // Nils are identical even of different types
+    //noinspection ComparingUnrelatedTypes
     assert(na eq nb)
     assert(na == nb)
   }
