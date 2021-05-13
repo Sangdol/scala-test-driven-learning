@@ -5,6 +5,7 @@ import scala.math._
 import scala.util.control.Breaks._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 // https://docs.scala-lang.org/getting-started/intellij-track/testing-scala-in-intellij-with-scalatest.html
 class SyntaxTest extends AnyFunSuite {
@@ -87,7 +88,7 @@ class SyntaxTest extends AnyFunSuite {
     // An assignment returns a Unit value.
     // Unit is a type and the only value is '()'.
     var a = 0
-    assert({a = 1} == ())
+    assert({ a = 1 } == ())
   }
 
   test("Loops") {
@@ -156,31 +157,35 @@ class SyntaxTest extends AnyFunSuite {
 
   // https://docs.scala-lang.org/tour/pattern-matching.html
   test("Case") {
-    def matchTest(n: Int): String = n match {
-      case 1 => "one"
-      case 2 => "two"
-      case _ => "other"
-    }
+    def matchTest(n: Int): String =
+      n match {
+        case 1 => "one"
+        case 2 => "two"
+        case _ => "other"
+      }
 
     assert(matchTest(1) == "one")
     assert(matchTest(2) == "two")
     assert(matchTest(3) == "other")
 
     // Pattern guard: if ...
-    def matchTestWithPatternGuard(n: Int, flag: Boolean): String = n match {
-      case 1 if flag => "one"
-      case 2 if flag => "two"
-      case _ => "other"
-    }
+    def matchTestWithPatternGuard(n: Int, flag: Boolean): String =
+      n match {
+        case 1 if flag => "one"
+        case 2 if flag => "two"
+        case _         => "other"
+      }
 
     assert(matchTestWithPatternGuard(1, flag = true) == "one")
     assert(matchTestWithPatternGuard(1, flag = false) == "other")
 
-    def matchTestWithList(l: List[Int]): List[Any] = l match {
-      case Nil => Nil
-      case first :: _ => List(first)
-      case first :: second :: tail => List(first, second, tail)  // this will never be reached.
-    }
+    def matchTestWithList(l: List[Int]): List[Any] =
+      l match {
+        case Nil        => Nil
+        case first :: _ => List(first)
+        case first :: second :: tail =>
+          List(first, second, tail) // this will never be reached.
+      }
 
     assert(matchTestWithList(Nil) == Nil)
     assert(matchTestWithList(List(1)) == List(1))
@@ -192,28 +197,29 @@ class SyntaxTest extends AnyFunSuite {
     // https://docs.scala-lang.org/tour/for-comprehensions.html
     val evens =
       for (ns <- List(1, 2, 3) if ns % 2 == 0)
-      yield ns
+        yield ns
 
     assert(evens == List(2))
   }
 
   /**
-   * https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
-   */
+    * https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
+    */
   test("for comprehension with futures") {
+
     /**
-     * This runs sequentially.
-     */
+      * This runs sequentially.
+      */
     val fsum1 = for {
       r1 <- Future(1)
       r2 <- Future(2)
-    } yield (r1 + r2)
+    } yield r1 + r2
 
     assert(Await.result(fsum1, 1.second) == 3)
 
     /**
-     * Parallel solution
-     */
+      * Parallel solution
+      */
     val f1 = Future(1)
     val f2 = Future(2)
     val f3 = Future(3)
@@ -222,7 +228,7 @@ class SyntaxTest extends AnyFunSuite {
       r1 <- f1
       r2 <- f2
       r3 <- f3
-    } yield (r1 + r2 + r3)
+    } yield r1 + r2 + r3
 
     val sum = Await.result(fsum2, 1.second)
 
@@ -231,5 +237,14 @@ class SyntaxTest extends AnyFunSuite {
 //    val sum = Await.result(fsum, 1 second)
 
     assert(sum == 6)
+  }
+
+  test("infix, prefix, and postfix") {
+    // import scala.language.postfixOps is needed for the first expression
+    // Precedence: Prefix >  Infix > Postfix
+    val i = 1
+    assert((-i to 2).toList == List(-1, 0, 1, 2))
+    assert((-i to 2 sum) == 2)
+    assert((-i to 2 sum) == (-i).to(2).sum)
   }
 }
