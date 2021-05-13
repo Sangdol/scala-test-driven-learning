@@ -133,6 +133,8 @@ class FunctionTest extends AnyFunSuite {
   test("Methods are not functions") {
     // This is a method. A method is not a value.
     // So you cannot assign this to a variable.
+    // What is the class of this method?
+    //   FunctionTest
     def add1(n: Int): Int = n + 1
 
     // You need to put '_' to make it function
@@ -146,6 +148,8 @@ class FunctionTest extends AnyFunSuite {
     //     This method need to be called without ().
     //     https://docs.scala-lang.org/tour/basics.html#methods
     def add2: (Int) => Int = (n) => n + 2
+    assert(add2(1) == 3)
+
     val f2 = add2
     assert(f2(1) == 3)
 
@@ -222,5 +226,30 @@ class FunctionTest extends AnyFunSuite {
 
     val f = (_: Int) + (_: Int)
     assert(f(2, 3) == 5)
+  }
+
+  test("lambda styles") {
+    // https://www.scala-exercises.org/std_lib/higher_order_functions
+    def lambda = { x: Int => x + 1 }
+    def lambda2 = (x: Int) => x + 2
+    val lambda3 = (x: Int) => x + 3
+
+    // A function is an object with an `apply` under the hood
+    val lambda4 = new Function1[Int, Int] {
+      override def apply(v1: Int): Int = v1 + 4
+    }
+
+    val lambda5 = new (Int => Int) {
+      override def apply(v1: Int): Int = v1 + 5
+    }
+
+    def lambda6(x: Int) = x + 6
+
+    assert(lambda(0) == 1)
+    assert(lambda2(0) == 2)
+    assert(lambda3(0) == 3)
+    assert(lambda4(0) == 4)
+    assert(lambda5(0) == 5)
+    assert(lambda6(0) == 6)
   }
 }
