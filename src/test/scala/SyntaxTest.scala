@@ -247,4 +247,26 @@ class SyntaxTest extends AnyFunSuite {
     assert((-i to 2 sum) == 2)
     assert((-i to 2 sum) == (-i).to(2).sum)
   }
+
+  test("Infix Types") {
+    // https://www.scala-exercises.org/std_lib/infix_types
+    case class Person(name: String) {
+      def loves(person: Person) = new Loves(this, person)
+    }
+
+    class Loves[A, B](val a: A, val b: B)
+
+    def announceCouple(couple: Person Loves Person) =
+      //Notice our type: Person loves Person!
+      couple.a.name + " is in love with " + couple.b.name
+
+    val romeo = Person("Romeo")
+    val juliet = Person("Juliet")
+
+    assert(
+      announceCouple(new Loves(romeo, juliet)) == "Romeo is in love with Juliet"
+    )
+
+    assert(announceCouple(romeo loves juliet) == "Romeo is in love with Juliet")
+  }
 }
