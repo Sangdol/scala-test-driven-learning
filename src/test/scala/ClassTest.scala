@@ -142,4 +142,23 @@ class ClassTest extends AnyFunSuite {
     val sang = new VerifiedTweeter("sang")
     assert(sang.tweet("Hello") == "real sang: Hello")
   }
+
+  test("constructor") {
+    // https://docs.scala-lang.org/tour/classes.html
+
+    // var: set and get
+    class Point(var x: Int, var y: Int)
+
+    val p = new Point(1, 2)
+    p.x = 2
+
+    // no identifier no access / visible only inside the class
+    class Point2(x: Int, y: Int)
+    val p2 = new Point2(1, 2)
+
+    // val: only get
+    class Point3(val x: Int, val y: Int)
+    val p3 = new Point3(1, 2)
+    p3.x
+  }
 }
