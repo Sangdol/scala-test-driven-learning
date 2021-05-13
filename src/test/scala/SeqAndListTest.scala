@@ -13,7 +13,7 @@ class SeqAndListTest extends AnyFunSuite {
     // Scala's Seq is Java's List
     // Scala's List is Java's LinkedList
     // https://stackoverflow.com/questions/10866639/difference-between-a-seq-and-a-list-in-scala
-    assert(Seq(1,2).head == 1)
+    assert(Seq(1, 2).head == 1)
   }
 
   test("Range") {
@@ -62,7 +62,7 @@ class SeqAndListTest extends AnyFunSuite {
 
   test("List Factory") {
     assert(List.fill(2)(3) == List(3, 3))
-    assert(List.fill(2)({1 + 2}) == List(3, 3))
+    assert(List.fill(2)({ 1 + 2 }) == List(3, 3))
   }
 
   test("fold, unfold") {
@@ -72,26 +72,48 @@ class SeqAndListTest extends AnyFunSuite {
     // A: value
     // S: conditional value
     // CC: container (List)
-    assert(List.unfold(2)(n => if (n > 0) Some(n+1, n-1) else None) ==
-      List(3, 2))
+    assert(
+      List.unfold(2)(n => if (n > 0) Some(n + 1, n - 1) else None) ==
+        List(3, 2)
+    )
 
     // This will run infinitely if it were List
     // since there's no condition to stop it.
-    assert(LazyList.unfold(100)(n => Some((1, n+10))).take(2) ==
-      LazyList(1, 1))
+    assert(
+      LazyList.unfold(100)(n => Some((1, n + 10))).take(2) ==
+        LazyList(1, 1)
+    )
   }
 
   test("zip") {
-    assert(List(1,2).zip(List(2,1)) == List((1,2), (2,1)))
+    assert(List(1, 2).zip(List(2, 1)) == List((1, 2), (2, 1)))
   }
 
   test("find") {
-    assert(List(1,2).find(_ == 3).getOrElse(None) == None)
-    assert(List(1,2).find(_ == 1).getOrElse(None) == 1)
+    assert(List(1, 2).find(_ == 3).getOrElse(None) == None)
+    assert(List(1, 2).find(_ == 1).getOrElse(None) == 1)
   }
 
   test("from") {
-    assert(LazyList.from(0).take(3) == List(0,1,2))
+    assert(LazyList.from(0).take(3) == List(0, 1, 2))
+  }
+
+  test("Equality and identity") {
+    val a = List(1, 2, 3)
+    val b = List(1, 2, 3)
+
+    // identity
+    assert(!(a eq b))
+
+    // equality
+    assert(a == b)
+
+    val na: List[String] = Nil
+    val nb: List[Int] = Nil
+
+    // Nils are identical even of different types
+    assert(na eq nb)
+    assert(na == nb)
   }
 
 }
