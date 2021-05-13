@@ -1,23 +1,25 @@
 import org.scalatest.funsuite.AnyFunSuite
 
 // No public: A scala file can have multiple classes and all of them are public.
-class Counter {
-  private var count = 0
-
-  def increment() { count += 1 }
-
-  def current() = count
-
-  def currentWithoutParens = count
-}
 
 class ClassTest extends AnyFunSuite {
+  class Counter {
+    private var count = 0
+
+    def increment() { count += 1 }
+
+    def current(): Int = count
+
+    def currentWithoutParens: Int = count
+  }
 
   test("Counter") {
     val counter = new Counter
-    counter.increment()  // mutator
-    assert(counter.current == 1)  // accessor
-    assert(counter.currentWithoutParens == 1) // accessor which doesn't allow parens.
+    counter.increment() // mutator
+    assert(counter.current == 1) // accessor
+    assert(
+      counter.currentWithoutParens == 1
+    ) // accessor which doesn't allow parens.
   }
 
   test("Getter and setter") {
@@ -53,8 +55,7 @@ class ClassTest extends AnyFunSuite {
 
     // This has a constructor with a parameter with a default value.
     // This can eliminate the auxiliary constructor.
-    class Person2(var age: Int = 0) {
-    }
+    class Person2(var age: Int = 0) {}
 
     val person2 = new Person2
     person2.age = 10
@@ -70,16 +71,16 @@ class ClassTest extends AnyFunSuite {
     object Account {
       private var lastNumber = 0
 
-      def newUniqueNumber = { lastNumber += 1; lastNumber }
+      def newUniqueNumber: Int = { lastNumber += 1; lastNumber }
 
       // Can be used like Array(100)
-      def apply(balance: Double) = {
+      def apply(balance: Double): Account = {
         new Account(balance)
       }
     }
 
     class Account {
-      val id = Account.newUniqueNumber
+      val id: Int = Account.newUniqueNumber
 
       var balance = 0.0
 
@@ -111,7 +112,7 @@ class ClassTest extends AnyFunSuite {
     val b3 = b2.copy(isbn = "2")
     assert(b3.isbn == "2")
 
-    def bookGenerator: (String) => Book = (isbn) => Book(f"isbn: $isbn")
+    def bookGenerator: String => Book = isbn => Book(f"isbn: $isbn")
 
     assert(bookGenerator("123").isbn == "isbn: 123")
 
@@ -120,5 +121,25 @@ class ClassTest extends AnyFunSuite {
     }
 
     assert(bookGenerator2("111").isbn == "ISBN: 111")
+  }
+
+  test("Self-Type") {
+    // https://docs.scala-lang.org/tour/self-types.html
+    trait User {
+      def username: String
+    }
+
+    trait Tweeter {
+      this: User => // reassign this
+      def tweet(tweetText: String) = s"$username: $tweetText"
+    }
+
+    // We mixin User because Tweeter required it
+    class VerifiedTweeter(val username_ : String) extends Tweeter with User {
+      def username = s"real $username_"
+    }
+
+    val sang = new VerifiedTweeter("sang")
+    assert(sang.tweet("Hello") == "real sang: Hello")
   }
 }
