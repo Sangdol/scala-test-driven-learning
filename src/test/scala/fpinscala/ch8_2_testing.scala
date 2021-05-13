@@ -1,33 +1,32 @@
 package fpinscala
 
-import fpinscala.Prop.{FailedCase, SuccessCount, TestCases, forAll}
+import fpinscala.Prop.{FailedCase, MaxSize, SuccessCount, TestCases, forAll}
 import fpinscala.RNG.nonNegativeInt
 import org.scalatest.funsuite.AnyFunSuite
 
-case class Prop(run: (TestCases, RNG) => Result) {
+case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
 
-  // where is `max` from in the blue book solution?
   // What is Prop.check for?
   // Difficult
   def &&(p: Prop): Prop =
-    Prop { (n, rng) =>
-      run(n, rng) match {
-        case Passed => p.run(n, rng)
+    Prop { (max, n, rng) =>
+      run(max, n, rng) match {
+        case Passed => p.run(max, n, rng)
         case x      => x
       }
     }
 
   def ||(p: Prop): Prop =
-    Prop { (n, rng) =>
-      run(n, rng) match {
-        case Falsified(msg, _) => p.tag(msg).run(n, rng)
+    Prop { (max, n, rng) =>
+      run(max, n, rng) match {
+        case Falsified(msg, _) => p.tag(msg).run(max, n, rng)
         case x                 => x
       }
     }
 
   def tag(msg: String): Prop =
-    Prop { (n, rng) =>
-      run(n, rng) match {
+    Prop { (max, n, rng) =>
+      run(max, n, rng) match {
         case Falsified(failure, successes) =>
           Falsified(msg + "\n" + failure, successes)
         case x => x
@@ -40,9 +39,32 @@ object Prop {
   type FailedCase = String
   type SuccessCount = Int
   type TestCases = Int
+  type MaxSize = Int
+
+  // List 8.4
+  // Why this doesn't work?
+//  def forAll[A](as: SGen[A])(f: A => Boolean): Prop =
+//    forAll(as(_))(f)
+
+  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop =
+    Prop { (max, n, rng) =>
+      val casesPerSize = (n + (max - 1)) / max
+      val props: LazyList[Prop] =
+        LazyList.from(0).take((n min max) + 1).map(i => forAll(g(i))(f))
+      val prop: Prop =
+        props
+          .map(p =>
+            Prop { (max, _, rng) =>
+              p.run(max, casesPerSize, rng)
+            }
+          )
+          .toList
+          .reduce { _ && _ }
+      prop.run(max, n, rng)
+    }
 
   def forAll[A](as: Gen[A])(f: A => Boolean): Prop =
-    Prop { (n, rng) =>
+    Prop { (max, n, rng) =>
       randomStream(as)(rng)
         .zip(LazyList.from(0))
         .take(n)
@@ -412,14 +434,15 @@ class ch8_2_testing extends AnyFunSuite {
     val rng = RNG.Simple(seed = 1)
 
     val prop = forAll(gen1)(_ > 0) && forAll(gen2)(_ > 0)
+    val MAX = 5
 
-    assert(prop.run(2, rng) == Passed)
+    assert(prop.run(MAX, 2, rng) == Passed)
 
     val prop2 = forAll(gen1)(_ < 0) && forAll(gen2)(_ < 0)
-    assert(prop2.run(2, rng) == Falsified("1", 0))
+    assert(prop2.run(MAX, 2, rng) == Falsified("1", 0))
 
     val prop3 = forAll(gen1)(_ < 0) || forAll(gen2)(_ < 0)
-    assert(prop3.run(2, rng) == Falsified("1\n2", 0))
+    assert(prop3.run(MAX, 2, rng) == Falsified("1\n2", 0))
   }
 
   test("8.10") {
