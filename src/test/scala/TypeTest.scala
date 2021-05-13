@@ -108,6 +108,13 @@ class TypeTest extends AnyFunSuite {
     //   But then what happens when we do reflection or want to express what goes on the in the VM?
     //   We need to be able to represent what the JVM does using the types we have in Scala,
     //   and existential types let us do that.”
+
+    // https://www.drmaciver.com/2008/03/existential-types-in-scala/
+    // “I want an Array, and I don’t care what type of things it contains”
+    // This is exactly what existential types are for.
+    // Short form
+    def getLengthUnderline(x: Array[_]): Int = x.length
+    assert(getLengthUnderline(Array(1, 2, 3)) == 3)
   }
 
 }
