@@ -4,6 +4,7 @@ import scala.language.existentials
 
 class TypeTest extends AnyFunSuite {
   // https://stackoverflow.com/a/19388313/524588
+  //noinspection ScalaUnusedSymbol
   def manOf[T: Manifest](t: T): Manifest[T] = manifest[T]
 
   def shortManOf[T: Manifest](t: T): String =
@@ -21,7 +22,7 @@ class TypeTest extends AnyFunSuite {
     assert(classOf[Int].toString == "int")
   }
 
-  test("isInstanceOf") {
+  test("isInstanceOf function") {
     def addWithSyntaxSugar(x: Int) = (y: Int) => x + y
 
     // This is possible since parameter types are unknown at runtime.
@@ -29,6 +30,25 @@ class TypeTest extends AnyFunSuite {
     assert(addWithSyntaxSugar(1).isInstanceOf[(_) => _])
     assert(addWithSyntaxSugar(1).isInstanceOf[_ => _])
     assert(addWithSyntaxSugar(1).isInstanceOf[Int => Int])
+  }
+
+  test("isInstanceOf class") {
+    // https://www.scala-exercises.org/std_lib/type_signatures
+    trait Randomizer[A] {
+      def draw(): A
+    }
+
+    class IntRandomizer extends Randomizer[Int] {
+      def draw(): Int = {
+        import util.Random
+        Random.nextInt()
+      }
+    }
+
+    val intRand = new IntRandomizer
+    assert(intRand.isInstanceOf[IntRandomizer])
+    assert(intRand.isInstanceOf[Randomizer[Int]])
+    assert(intRand.draw().isInstanceOf[Int])
   }
 
   test("Local Type Inference") {
