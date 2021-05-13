@@ -269,4 +269,33 @@ class SyntaxTest extends AnyFunSuite {
 
     assert(announceCouple(romeo loves juliet) == "Romeo is in love with Juliet")
   }
+
+  test("Extractors 1") {
+    // https://www.scala-exercises.org/std_lib/extractors
+    object Twice {
+      def apply(x: Int): Int = x * 2
+      def unapply(z: Int): Option[Int] = if (z % 3 == 0) Some(z / 3) else None
+    }
+
+    val twiceUnapply = (n: Int) =>
+      Twice(n) match {
+        case Twice(a) => a
+        case _        => 0
+      }
+
+    assert(twiceUnapply(21) == 14)
+    assert(twiceUnapply(22) == 0)
+  }
+
+  test("Extractors 2") {
+    class Human(val name: String, val age: Int)
+
+    object Profile {
+      def unapply(h: Human): Option[(String, Int)] = Some((h.name, h.age))
+    }
+
+    val Profile(name, age) = new Human("Sang", 37)
+    assert(name == "Sang")
+    assert(age == 37)
+  }
 }
