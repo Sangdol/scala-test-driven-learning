@@ -16,15 +16,22 @@ class SeqAndListTest extends AnyFunSuite {
     assert(Seq(1, 2).head == 1)
   }
 
-  test("Range") {
-    val range = 1 to 5
+  test("Range: to, until, and by") {
+    val to = 1 to 5
 
-    assert(range.isInstanceOf[Range])
-    assert(range.isInstanceOf[Inclusive])
-    assert(range.sum[Int] == 15)
+    assert(to.isInstanceOf[Range])
+    assert(to.isInstanceOf[Inclusive])
+    assert(to.sum[Int] == 15)
 
-    assert(range.head == 1)
-    assert(range.tail == (2 to 5))
+    assert(to.head == 1)
+    assert(to.tail == (2 to 5))
+
+    val range = Range(0, 5)
+    assert(range.sum == 10)
+    assert(range == (0 until 5))
+
+    val evens = 0 until 5 by 2
+    assert(evens.sum == 6)
   }
 
   test("List immutable") {
