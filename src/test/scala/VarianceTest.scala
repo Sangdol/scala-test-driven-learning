@@ -133,4 +133,27 @@ class VarianceTest extends AnyFunSuite {
     assert(contra.u.toString == "1")
   }
 
+  test("Complex covariance") {
+    // A is in contravariant position
+    // since it'll be used as an argument.
+//    case class Covariance[+A](a: A => Int)
+//    case class Covariance[+A](a: Int => A => Int)
+
+    case class Covariance[+A](a: Int => Int => A)
+    case class Covariance2[+A](a: Int => Int => Int => A)
+    case class Covariance3[+A, U <: A](a: Int => U => Int)
+    case class Covariance4[+A, U <: A](a: Int => U => A)
+  }
+
+  test("Complex contravariance") {
+    // A is in covariant position
+    // since it'll be used as a return value.
+//    case class Contravariance[-A](a: Int => A)
+
+    case class Contravariance[-A](a: A => Int)
+    case class Contravariance2[-A](a: Int => A => Int)
+    case class Contravariance3[-A](a: Int => A => A => Int)
+    case class Contravariance4[-A, U >: A](a: Int => A => A => U)
+  }
+
 }
