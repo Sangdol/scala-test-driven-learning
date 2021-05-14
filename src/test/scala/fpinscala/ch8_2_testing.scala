@@ -108,7 +108,8 @@ case class Falsified(failure: FailedCase, successes: SuccessCount)
 
 // Covariant Type A occurs in invariant position
 // case class SGen[+A](forSize: Int => Gen[A])
-//   -> Gen has to be covariant
+//   -> Gen has to be covariant since A is covariant.
+//   -> forSize is in covariant position since it's accessible (returnable)
 // What is the difference between size and TestCases?
 case class SGen[+A](forSize: Int => Gen[A]) {
 
