@@ -88,19 +88,6 @@ class VarianceTest extends AnyFunSuite {
 //    assert(catDogList.head.bark() == "dog bark")
   }
 
-  test("immutability") {
-    case class Value[+T](v: T)
-
-    val v = Value[Int](1)
-
-    // Why mutable value doesn't work? ("Covariant type T occurs in contravariant position")
-    //   Because Value[Animal] can have a dog or a cat.
-//    case class Value[+T](var v: T)
-
-    // Then why this doesn't work? "Contravariant type T occurs in covariant position in type T of value v"
-//    case class Value[-T](var v: T)
-  }
-
   test("Type Variance") {
     class Fruit
 
@@ -117,10 +104,33 @@ class VarianceTest extends AnyFunSuite {
     assert(fruitBasket3.contents == "Orange$1")
 
     // Why can it pass an orange?
+    //   Since it's at contravariant position.
     // Why is the type Fruit rather than Orange?
-    val fruitBasket4: TypeContainerMinus[Orange] =
+    //   Since its container type is Fruit when it was created.
+    // Why I can assign a FruitBasket to an OrangeBasket?
+    //   Since the value in it would be only accessible by its super type.
+    val orangeBasket: TypeContainerMinus[Orange] =
       new TypeContainerMinus[Fruit](new Orange())
-    assert(fruitBasket4.contents == "Fruit$1")
+    assert(orangeBasket.contents == "Fruit$1")
+  }
+
+  test("Constructor variance") {
+    class Covariance[+A](val a: A)
+    val co = new Covariance(1)
+    assert(co.a == 1)
+
+    // 'a' is not accessible directly using 'val'
+    // since it'd be covariance by being able to return the value.
+    class Contravariance[-A, U >: A](a: A) {
+      var u: U = a
+    }
+    val contra = new Contravariance[String, Any]("a")
+    assert(contra.u.toString == "a")
+
+    // You can also change the value since it's accessible
+    // only by an upper type.
+    contra.u = 1
+    assert(contra.u.toString == "1")
   }
 
 }
