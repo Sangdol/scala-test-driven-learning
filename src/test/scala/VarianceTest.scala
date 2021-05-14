@@ -1,10 +1,37 @@
 import org.scalatest.funsuite.AnyFunSuite
 
-
 class VarianceTest extends AnyFunSuite {
+
+  class TypeContainer[A](val a: A)(implicit
+      manifest: scala.reflect.Manifest[A]
+  ) {
+    def contents: String = manifest.runtimeClass.getSimpleName
+  }
+
+  class TypeContainerPlus[+A](val a: A)(implicit
+      manifest: scala.reflect.Manifest[A]
+  ) {
+    def contents: String = manifest.runtimeClass.getSimpleName
+  }
+
+  // Can't receive a 'val' because it would be in a covariant position.
+  // (Adding 'val' means it's accessible and returnable.)
+  class TypeContainerMinus[-A](a: A)(implicit
+      manifest: scala.reflect.Manifest[A]
+  ) {
+    def contents: String = manifest.runtimeClass.getSimpleName
+  }
+
+  // Now it's possible to use 'val' since U is an upper type.
+  class TypeContainerMinus2[-A, U >: A](val a: U)(implicit
+      manifest: scala.reflect.Manifest[A]
+  ) {
+    def contents: String = manifest.runtimeClass.getSimpleName
+  }
+
   /**
-   * https://docs.scala-lang.org/tour/lower-type-bounds.html
-   */
+    * https://docs.scala-lang.org/tour/lower-type-bounds.html
+    */
   test("Lower type bounds") {
 
     sealed abstract class Animal {
@@ -72,6 +99,28 @@ class VarianceTest extends AnyFunSuite {
 
     // Then why this doesn't work? "Contravariant type T occurs in covariant position in type T of value v"
 //    case class Value[-T](var v: T)
+  }
+
+  test("Type Variance") {
+    class Fruit
+
+    class Orange extends Fruit
+
+    val fruitBasket = new TypeContainer(new Orange())
+    assert(fruitBasket.contents == "Orange$1")
+
+    val fruitBasket2 = new TypeContainer[Fruit](new Orange())
+    assert(fruitBasket2.contents == "Fruit$1")
+
+    val fruitBasket3: TypeContainerPlus[Fruit] =
+      new TypeContainerPlus[Orange](new Orange())
+    assert(fruitBasket3.contents == "Orange$1")
+
+    // Why can it pass an orange?
+    // Why is the type Fruit rather than Orange?
+    val fruitBasket4: TypeContainerMinus[Orange] =
+      new TypeContainerMinus[Fruit](new Orange())
+    assert(fruitBasket4.contents == "Fruit$1")
   }
 
 }

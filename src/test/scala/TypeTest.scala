@@ -17,21 +17,6 @@ class TypeTest extends AnyFunSuite {
     def contents: String = manifest.runtimeClass.getSimpleName
   }
 
-  class TypeContainerPlus[+A](val a: A)(implicit
-      manifest: scala.reflect.Manifest[A]
-  ) {
-    def contents: String = manifest.runtimeClass.getSimpleName
-  }
-
-  // Can't receive a val because it would be in a covariant position.
-  // a is mutable.
-  // But why it has to be mutable?
-  class TypeContainerMinus[-A](a: A)(implicit
-      manifest: scala.reflect.Manifest[A]
-  ) {
-    def contents: String = manifest.runtimeClass.getSimpleName
-  }
-
   test("getClass") {
     assert(Nil.getClass.toString == "class scala.collection.immutable.Nil$")
     assert(Nil.getClass.getSimpleName == "Nil$")
@@ -156,28 +141,6 @@ class TypeTest extends AnyFunSuite {
     // Short form
     def getLengthUnderline(x: Array[_]): Int = x.length
     assert(getLengthUnderline(Array(1, 2, 3)) == 3)
-  }
-
-  test("Type Variance") {
-    class Fruit
-
-    class Orange extends Fruit
-
-    val fruitBasket = new TypeContainer(new Orange())
-    assert(fruitBasket.contents == "Orange$1")
-
-    val fruitBasket2 = new TypeContainer[Fruit](new Orange())
-    assert(fruitBasket2.contents == "Fruit$1")
-
-    val fruitBasket3: TypeContainerPlus[Fruit] =
-      new TypeContainerPlus[Orange](new Orange())
-    assert(fruitBasket3.contents == "Orange$1")
-
-    // Why can it pass an orange?
-    // Why is the type Fruit rather than Orange?
-    val fruitBasket4: TypeContainerMinus[Orange] =
-      new TypeContainerMinus[Fruit](new Orange())
-    assert(fruitBasket4.contents == "Fruit$1")
   }
 
 }
