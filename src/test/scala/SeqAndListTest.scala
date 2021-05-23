@@ -136,4 +136,9 @@ class SeqAndListTest extends AnyFunSuite {
     assert(na == nb)
   }
 
+  test("sort") {
+    // This uses Java's sort method.
+    assert(List(3, 1, 2).sorted == List(1, 2, 3))
+  }
+
 }
