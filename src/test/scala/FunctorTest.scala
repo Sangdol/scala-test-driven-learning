@@ -4,6 +4,8 @@ class FunctorTest extends AnyFunSuite {
 
   /**
     * From Programming Scala, 2nd Edition
+    *
+    * Functor abstracts the `map` operation.
     */
   trait Functor[F[_]] {
     def map[A, B](fa: F[A])(f: A => B): F[B]
