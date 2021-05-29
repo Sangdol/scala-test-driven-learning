@@ -254,4 +254,31 @@ class FunctionTest extends AnyFunSuite {
     assert(lambda5(0) == 5)
     assert(lambda6(0) == 6)
   }
+
+  // partial: not defined for all possible input
+  test("PartialFunction") {
+    // 1. only case can be specified
+    // 2. only curly braces (no parentheses)
+    // 3. MatchError for a not handled input
+    val pf1: PartialFunction[Any, String] = { case s: String => "YES" }
+    val pf2: PartialFunction[Any, String] = { case s: Double => "YES" }
+
+    val pf = pf1 orElse pf2
+
+    // pf1
+    assert(pf1.isDefinedAt("str"))
+    assert(pf1("str") == "YES")
+    assertThrows[MatchError](pf1(1.0))
+
+    // pf2
+    assert(!pf2.isDefinedAt("str"))
+    assert(pf2(1.0) == "YES")
+    assertThrows[MatchError](pf2(1))
+    assertThrows[MatchError](pf2("str"))
+
+    // pf
+    assert(pf.isDefinedAt("str"))
+    assert(pf(1.0) == "YES")
+    assert(pf("str") == "YES")
+  }
 }
