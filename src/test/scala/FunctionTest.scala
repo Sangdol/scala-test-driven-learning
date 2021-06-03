@@ -281,4 +281,20 @@ class FunctionTest extends AnyFunSuite {
     assert(pf(1.0) == "YES")
     assert(pf("str") == "YES")
   }
+
+  test("Procedural function") {
+    var a = 1
+
+    // This returns Unit.
+    // This is deprecated as of Scala 2.11.
+    def change_a() { a = 2; 1 }
+
+    change_a()
+
+    assert(a == 2)
+
+    def change_a_and_return(): Int = { a = 3; a }
+
+    assert(change_a_and_return() == 3)
+  }
 }
