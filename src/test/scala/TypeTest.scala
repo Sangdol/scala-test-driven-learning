@@ -1,5 +1,6 @@
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.collection.immutable.HashMap
 import scala.language.existentials
 
 class TypeTest extends AnyFunSuite {
@@ -143,4 +144,32 @@ class TypeTest extends AnyFunSuite {
     assert(getLengthUnderline(Array(1, 2, 3)) == 3)
   }
 
+  test("type inference") {
+    // Two ways
+    val h1: HashMap[String, Int] = new HashMap
+    val h2 = new HashMap[String, Int]
+
+    assert(h1 == h2)
+
+    // Scala can't infer all types in part due to subtype polymorphism (inheritance).
+    //
+    // When explicit type annotations are required
+    // 1. No value (val book: String, var count: Int)
+    // 2. Method parameters
+    // 3. Method return type in the following cases
+    //    a. explicit return
+    //    b. recursive
+    //    c. overloaded methods and one is calling another
+    //    d. when the inferred return type is more general than intended e.g., Any
+    //       (when you want to specify)
+
+    object StringUtilV1 {
+      def joiner(strings: String*) = strings.mkString("-")
+      // overloaded - the return type is must
+      def joiner(strings: List[String]): String = joiner(strings: _*)
+    }
+
+    assert(StringUtilV1.joiner(List("1", "2")) == "1-2")
+
+  }
 }
