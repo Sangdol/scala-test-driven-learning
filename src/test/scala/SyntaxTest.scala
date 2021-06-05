@@ -321,4 +321,23 @@ class SyntaxTest extends AnyFunSuite {
     def incByName(x: => Int): Int = x + 1
     assert(incByName({ 1 + 1 }) == 3)
   }
+
+  test("call by name") {
+    @annotation.tailrec
+    def continue(conditional: => Boolean)(body: => Unit): Unit = {
+      // calling by name and these are evaluated when it's referenced.
+      if (conditional) {
+        body
+        continue(conditional)(body)
+      }
+    }
+
+    var count = 0
+
+    continue(count < 5) {
+      count += 1
+    }
+
+    assert(count == 5)
+  }
 }
