@@ -1,10 +1,10 @@
 import org.scalatest.funsuite.AnyFunSuite
 
-class ImplicitTest extends  AnyFunSuite {
+class ImplicitTest extends AnyFunSuite {
 
   /**
-   * https://docs.scala-lang.org/tour/implicit-parameters.html
-   */
+    * https://docs.scala-lang.org/tour/implicit-parameters.html
+    */
   test("Implicit Parameters") {
     abstract class Monoid[A] {
       def add(x: A, y: A): A
@@ -36,11 +36,11 @@ class ImplicitTest extends  AnyFunSuite {
   }
 
   test("Implicit variable") {
-    implicit val rate = 0.5F
+    implicit val rate: Float = 0.5f
 
     def calcTax(amount: Float)(implicit rate: Float): Float = amount * rate
 
-    assert(calcTax(10) == 5.0F)
+    assert(calcTax(10) == 5.0f)
   }
 
   test("Implicitly") {
@@ -51,7 +51,7 @@ class ImplicitTest extends  AnyFunSuite {
         list.sortBy(f)(ord)
 
       // We need 'implicitly' since Ordering is not explicitly declared.
-      def sortBy2[B : Ordering](f: A => B): List[A] =
+      def sortBy2[B: Ordering](f: A => B): List[A] =
         list.sortBy(f)(implicitly[Ordering[B]])
     }
 
