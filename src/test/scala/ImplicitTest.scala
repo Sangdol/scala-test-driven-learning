@@ -64,6 +64,7 @@ class ImplicitTest extends AnyFunSuite {
   test("evidence") {
     // Copied from TraversableOnce (TraversableOnce is deprecated for some reason)
     // ev is synthesized by the compiler
+    // This is a way to constrain allowed types without requiring to conform to a supertype.
     def toMap[A, T, U](lst: IterableOnce[A])(implicit
         ev: <:<[A, (T, U)] // A has to be a pair (subtype of (T, U)).
     ): Map[T, U] = {
@@ -78,6 +79,20 @@ class ImplicitTest extends AnyFunSuite {
 
     // Compiler error: no implicit arguments of type: String <:< (T, U)
 //    assert(toMap(List("a"))
+  }
+
+  test("Working around erasure") {
+    object MM {
+      implicit object IntMarker
+      implicit object StringMarker
+
+      // This is not possible without Markers due to type erasure.
+      def m(seq: Seq[Int])(implicit i: IntMarker.type): Seq[Int] = seq
+      def m(seq: Seq[String])(implicit s: StringMarker.type): Seq[String] = seq
+    }
+
+    assert(MM.m(List(1)) == List(1))
+    assert(MM.m(List("a")) == List("a"))
   }
 
 }
