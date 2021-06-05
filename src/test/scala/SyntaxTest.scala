@@ -200,6 +200,21 @@ class SyntaxTest extends AnyFunSuite {
         yield ns
 
     assert(evens == List(2))
+
+    val evensDouble =
+      for {
+        ns <- List(1, 2, 3) if ns % 2 == 0
+        ds = ns * 2
+      } yield ds
+
+    assert(evensDouble == List(4))
+
+    val evensTriple =
+      for {
+        ns <- List(1, 2, 3) if ns % 2 == 0
+      } yield ns * 3
+
+    assert(evensTriple == List(6))
   }
 
   /**
