@@ -1,5 +1,7 @@
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.collection.immutable
+
 class ImplicitTest extends AnyFunSuite {
 
   /**
@@ -57,6 +59,25 @@ class ImplicitTest extends AnyFunSuite {
 
     assert(MyList(List(1, 3, 2)).sortBy1(i => i) == List(1, 2, 3))
     assert(MyList(List(1, 3, 2)).sortBy2(i => i) == List(1, 2, 3))
+  }
+
+  test("evidence") {
+    // Copied from TraversableOnce (TraversableOnce is deprecated for some reason)
+    // ev is synthesized by the compiler
+    def toMap[A, T, U](lst: IterableOnce[A])(implicit
+        ev: <:<[A, (T, U)] // A has to be a pair (subtype of (T, U)).
+    ): Map[T, U] = {
+      val b = immutable.Map.newBuilder[T, U]
+      for (x <- lst)
+        b += x
+
+      b.result()
+    }
+
+    assert(toMap(List("a" -> 1)) == Map("a" -> 1))
+
+    // Compiler error: no implicit arguments of type: String <:< (T, U)
+//    assert(toMap(List("a"))
   }
 
 }
