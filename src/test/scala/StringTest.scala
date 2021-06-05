@@ -3,8 +3,8 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.WrappedString
 
 /**
- * See StringOps
- */
+  * See StringOps
+  */
 class StringTest extends AnyFunSuite {
 
   test("intersect") {
@@ -28,7 +28,7 @@ class StringTest extends AnyFunSuite {
   }
 
   test("first and last") {
-    assert("abc"(0) == 'a')
+    assert("abc" (0) == 'a')
     assert("abc".last == 'c')
   }
 
@@ -39,13 +39,21 @@ class StringTest extends AnyFunSuite {
     assert("abc".dropRight(2) == "a")
   }
 
+  /**
+    * https://docs.scala-lang.org/overviews/core/string-interpolation.html
+    */
   test("string interpolation") {
     val name = "Sang"
     val age = 37
     assert(f"$name: ${age + 1}" == "Sang: 38")
 
+    // f is typesafe
     // $$ -> $
     assert(f"$$10" == "$10")
     assert(f"$$$age" == "$37")
+    assert(s"$name" == "Sang")
+
+    // raw
+    assert(raw"a\nb" == s"a\\nb")
   }
 }
