@@ -95,4 +95,27 @@ class ImplicitTest extends AnyFunSuite {
     assert(MM.m(List("a")) == List("a"))
   }
 
+  test("Phantom type") {
+    // https://medium.com/@maximilianofelice/builder-pattern-in-scala-with-phantom-types-3e29a167e863
+    /**
+      * A phantom type is a manifestation of abstract type that has no effect on the runtime.
+      * These are useful to prove static properties of the code using type evidences.
+      * As they have no effect on the runtime they can be erased from the resulting code
+      * by the compiler once it has shown the constraints hold.
+      */
+    sealed trait DoorState
+    sealed trait Open extends DoorState
+    sealed trait Closed extends DoorState
+
+    case class Door[State <: DoorState]() {
+      def open(implicit ev: State =:= Closed) = Door[Open]()
+      def close(implicit ev: State =:= Open) = Door[Closed]()
+    }
+
+    // No implicit arguments of type: Open =:= Closed
+//    Door[Open].open
+
+    assert(Door[Open].close == Door[Closed]())
+  }
+
 }
