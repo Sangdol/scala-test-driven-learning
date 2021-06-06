@@ -302,4 +302,14 @@ class SyntaxTest extends AnyFunSuite {
 
     assert(count == 5)
   }
+
+  test("two element tuple literal") {
+    val t1 = (1, 2)
+    val t2 = (1 -> 2)
+    val t3 = (1 → 2)
+    val t4 = Tuple2(1, 2)
+
+    assert(t1 == t2)
+    assert(t3 == t4)
+  }
 }
