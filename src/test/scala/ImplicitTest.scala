@@ -116,6 +116,7 @@ class ImplicitTest extends AnyFunSuite {
 //    Door[Open].open
 
     assert(Door[Open].close == Door[Closed]())
+    assert(Door[Closed].open == Door[Open]())
   }
 
   test("implicit arguments rules") {
@@ -126,6 +127,32 @@ class ImplicitTest extends AnyFunSuite {
       *    The list can’t have “nonimplicit” arguments followed by implicit arguments.
       * 3. All the arguments are implicit when the list starts with the implicit keyword.
       */
+  }
+
+  test("Type Class Pattern") {
+    case class Name(firstName: String, lastName: String)
+    case class Person(name: Name, age: Int)
+
+    trait ToCSV {
+      def toCSV: String
+    }
+
+    implicit class NameToCSV(name: Name) {
+      def toCSV: String = f"${name.firstName},${name.lastName}"
+    }
+
+    implicit class PersonToCSV(person: Person) {
+      def toCSV: String = {
+        val name = person.name
+        f"${name.firstName},${name.lastName},${person.age}"
+      }
+    }
+
+    val name = Name("Sang", "Lee")
+    val sang = Person(name, 38)
+
+    assert(name.toCSV == "Sang,Lee")
+    assert(sang.toCSV == "Sang,Lee,38")
   }
 
 }
