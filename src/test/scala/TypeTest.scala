@@ -172,4 +172,59 @@ class TypeTest extends AnyFunSuite {
     assert(StringUtilV1.joiner(List("1", "2")) == "1-2")
 
   }
+
+  test("Abstract Types") {
+    // Parameterized types: for containers
+    // Abstract Type: for type families
+    trait exampleTrait {
+      type t1
+      type t2 >: t3 <: t1 // is `<: t1` needeD?
+      type t3 <: t1
+      type t4 <: Seq[t1]
+      // type t5 = +AnyRef // Error: Can't use variance annotations
+
+      val v1: t1
+      val v2: t2
+      val v3: t3
+      val v4: t4
+    }
+
+    trait T1 { val name1: String }
+    trait T2 extends T1 { val name2: String }
+    case class C(name1: String, name2: String) extends T2
+
+    object example extends exampleTrait {
+      type t1 = T1
+      type t2 = T2
+      type t3 = C
+      type t4 = Vector[T1]
+      val v1 = new T1 { val name1 = "T1" }
+      val v2 = new T2 { val name1 = "T1"; val name2 = "T2" }
+      val v3 = C("T1", "T2")
+      val v4 = Vector(v1)
+    }
+
+    test("Self-type annotations") {
+      abstract class SubjectObserver {
+        type S <: Subject
+        type O <: Observer
+
+        trait Subject {
+          // Assuming that Subject will be an instance of the subtype S.
+          // `_.receiveUpdate(self)` can't work without this.
+          self: S =>
+
+          private var observers = List[O]()
+
+          def addObserver(observer: O) = observers ::= observer
+
+          def notifyObservers() = observers.foreach(_.receiveUpdate(self))
+        }
+
+        trait Observer {
+          def receiveUpdate(subject: S)
+        }
+      }
+    }
+  }
 }
