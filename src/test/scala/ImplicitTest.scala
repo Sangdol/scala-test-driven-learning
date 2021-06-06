@@ -53,6 +53,7 @@ class ImplicitTest extends AnyFunSuite {
         list.sortBy(f)(ord)
 
       // We need 'implicitly' since Ordering is not explicitly declared.
+      // Context Bound https://docs.scala-lang.org/tutorials/FAQ/index.html
       def sortBy2[B: Ordering](f: A => B): List[A] =
         list.sortBy(f)(implicitly[Ordering[B]])
     }
