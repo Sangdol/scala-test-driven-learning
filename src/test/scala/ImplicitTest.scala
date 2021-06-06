@@ -159,4 +159,26 @@ class ImplicitTest extends AnyFunSuite {
     assert(sang.toCSV == "Sang,Lee,38")
   }
 
+  test("View Bounds <%") {
+    // It's deprecated in Scala 3.
+    object Serialization {
+      case class Rem[A](value: A) {
+        def serialized: String = s"-- $value --"
+      }
+      type Writable[A] = A => Rem[A]
+      implicit val fromInt: Writable[Int] = (i: Int) => Rem(i)
+      implicit val fromFloat: Writable[Float] = (f: Float) => Rem(f)
+      implicit val fromString: Writable[String] = (s: String) => Rem(s)
+    }
+
+    import Serialization._
+
+    object RemoteConnection {
+      def write[T: Writable](t: T): String =
+        t.serialized // Use stdout as the "remote connection"
+    }
+
+    assert(RemoteConnection.write(1) == "-- 1 --")
+  }
+
 }
