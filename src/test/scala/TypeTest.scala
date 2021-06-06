@@ -203,27 +203,27 @@ class TypeTest extends AnyFunSuite {
       val v3 = C("T1", "T2")
       val v4 = Vector(v1)
     }
+  }
 
-    test("Self-type annotations") {
-      abstract class SubjectObserver {
-        type S <: Subject
-        type O <: Observer
+  test("Self-type annotations") {
+    abstract class SubjectObserver {
+      type S <: Subject
+      type O <: Observer
 
-        trait Subject {
-          // Assuming that Subject will be an instance of the subtype S.
-          // `_.receiveUpdate(self)` can't work without this.
-          self: S =>
+      trait Subject {
+        // Assuming that Subject will be an instance of the subtype S.
+        // `_.receiveUpdate(self)` can't work without this.
+        self: S =>
 
-          private var observers = List[O]()
+        private var observers = List[O]()
 
-          def addObserver(observer: O) = observers ::= observer
+        def addObserver(observer: O) = observers ::= observer
 
-          def notifyObservers() = observers.foreach(_.receiveUpdate(self))
-        }
+        def notifyObservers() = observers.foreach(_.receiveUpdate(self))
+      }
 
-        trait Observer {
-          def receiveUpdate(subject: S)
-        }
+      trait Observer {
+        def receiveUpdate(subject: S)
       }
     }
   }
