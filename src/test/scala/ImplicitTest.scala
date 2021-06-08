@@ -59,10 +59,17 @@ class ImplicitTest extends AnyFunSuite {
         */
       def sortBy2[B: Ordering](f: A => B): List[A] =
         list.sortBy(f)(implicitly[Ordering[B]])
+
+      // == sortBy2
+      // context bound is almost the same as an implicit argument.
+      // https://stackoverflow.com/questions/29731579/understanding-multiple-context-bounds
+      def sortBy3[B](f: A => B)(implicit ev: Ordering[B]): List[A] =
+        list.sortBy(f)(implicitly[Ordering[B]])
     }
 
     assert(MyList(List(1, 3, 2)).sortBy1(i => i) == List(1, 2, 3))
     assert(MyList(List(1, 3, 2)).sortBy2(i => i) == List(1, 2, 3))
+    assert(MyList(List(1, 3, 2)).sortBy3(i => i) == List(1, 2, 3))
   }
 
   test("evidence") {
