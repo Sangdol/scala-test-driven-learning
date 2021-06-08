@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
 )
 
 // https://www.scala-sbt.org/1.x/docs/Howto-Scala.html
-initialCommands in console := """
+console / initialCommands := """
   import fpinscala._
 
   println("fpinscala is imported")
