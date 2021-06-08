@@ -2,7 +2,7 @@ name := "scala-test-driven-learning"
 
 version := "0.1"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.6"
 
 // What does ++=, %, %% mean?
 libraryDependencies ++= Seq(
