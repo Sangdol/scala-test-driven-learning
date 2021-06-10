@@ -57,4 +57,36 @@ class PatternMatchingTest extends AnyFunSuite {
       }
     }
   }
+
+  test("regex1") {
+    def isAlphabetWord(word: String): Boolean = {
+      val pattern = "([a-cA-C]+)".r
+      word match {
+        case pattern(c) => true
+        case _          => false
+      }
+    }
+
+    assert(isAlphabetWord("abC"))
+    assert(isAlphabetWord("abc"))
+    assert(!isAlphabetWord("abc`"))
+  }
+
+  test("regex2") {
+    // https://www.scala-lang.org/api/2.12.5/scala/util/matching/Regex.html
+    val date = raw"(\d{4})-(\d{2})-(\d{2})".r
+
+    var year: String = ""
+    var month: String = ""
+    var day: String = ""
+
+    "2021-06-10" match {
+      case date(y, m, d) =>
+        year = y
+        month = m
+        day = d
+    }
+
+    assert(f"$year-$month-$day" == "2021-06-10")
+  }
 }
