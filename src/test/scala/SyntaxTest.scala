@@ -155,7 +155,7 @@ class SyntaxTest extends AnyFunSuite {
     assert(vector.size == 10)
   }
 
-  test("for comprehensions with lists") {
+  test("for-comprehensions with lists") {
     // https://docs.scala-lang.org/tour/for-comprehensions.html
     val evens =
       for (ns <- List(1, 2, 3) if ns % 2 == 0)
