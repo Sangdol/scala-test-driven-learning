@@ -3,7 +3,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.Range.Inclusive
 import scala.collection.mutable.ListBuffer
 
-class SeqAndListTest extends AnyFunSuite {
+class ListAndSeqTest extends AnyFunSuite {
 
   test("Empty & Nil") {
     assert(List.empty == Nil)
