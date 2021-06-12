@@ -1,6 +1,7 @@
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.immutable.Range.Inclusive
+import scala.collection.mutable.ListBuffer
 
 class SeqAndListTest extends AnyFunSuite {
 
@@ -139,6 +140,22 @@ class SeqAndListTest extends AnyFunSuite {
   test("sort") {
     // This uses Java's sort method.
     assert(List(3, 1, 2).sorted == List(1, 2, 3))
+  }
+
+  test("ListBuffer - mutable list") {
+    val lb = ListBuffer[Int]()
+
+    lb += 1
+
+    assert(lb == List(1))
+
+    lb ++= List(2, 3)
+
+    assert(lb == List(1, 2, 3))
+
+    lb --= List(1, 3)
+
+    assert(lb == List(2))
   }
 
 }
