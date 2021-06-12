@@ -65,4 +65,14 @@ class Fibonacci extends AnyFunSuite {
     assert(fibNonRecur(3) == 2)
     assert(fibNonRecur(4) == 3)
   }
+
+  test("fib stream") {
+    // https://medium.com/swlh/applying-a-function-to-just-one-previous-term-in-a-scala-lazy-collection-59db607a05c2
+    // lazy is needed for IntelliJ to avoid "forward reference error"
+    // why?
+    lazy val fib: LazyList[Int] =
+      0 #:: 1 #:: fib.zip(fib.tail).map(t => t._1 + t._2)
+
+    assert(fib.take(5).toList == LazyList(0, 1, 1, 2, 3))
+  }
 }
