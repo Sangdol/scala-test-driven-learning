@@ -158,4 +158,14 @@ class ListAndSeqTest extends AnyFunSuite {
     assert(lb == List(2))
   }
 
+  test("span") {
+    assert(List(7, 1).span(_ != 2) == (List(7, 1), List()))
+    assert(List(7, 1).span(_ != 1) == (List(7), List(1)))
+    assert(List(7, 1, 1).span(_ != 1) == (List(7), List(1, 1)))
+
+    assert(
+      List(7, 3, 1, 4, 1, 6).span(_ != 1) == (List(7, 3), List(1, 4, 1, 6))
+    )
+  }
+
 }
