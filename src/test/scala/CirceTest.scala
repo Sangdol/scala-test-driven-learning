@@ -1,7 +1,5 @@
-import io.circe.Json.JObject
 import io.circe.generic.extras.Configuration
 import org.scalatest.funsuite.AnyFunSuite
-import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.{ACursor, Decoder, Encoder, HCursor, Json}
 import io.circe.parser._
