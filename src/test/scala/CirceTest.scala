@@ -280,17 +280,11 @@ class CirceTest extends AnyFunSuite {
   test("circe generic extras 2") {
     import io.circe.generic.extras.semiauto._
 
-    // These prevents this exception.
-    //   could not find Lazy implicit value of type io.circe.generic.extras.encoding.ConfiguredAsObjectEncoder[Parent]
-    //   implicit val encoder: Encoder[Parent] = deriveConfiguredEncoder
     implicit val conf: Configuration = Configuration.default.withSnakeCaseMemberNames
 
     case class Child(name: String)
     case class Parent(children: Seq[Child])
 
-    // These prevents this exception.
-    //   could not find Lazy implicit value of type io.circe.generic.extras.encoding.ConfiguredAsObjectEncoder[Parent]
-    //   implicit val encoder: Encoder[Parent] = deriveConfiguredEncoder
     implicit val encoderCreator: Encoder[Child] = deriveUnwrappedEncoder
     implicit val decoderCreator: Decoder[Child] = deriveUnwrappedDecoder
 
@@ -303,8 +297,6 @@ class CirceTest extends AnyFunSuite {
                  |  "c2"
                  |]""".stripMargin
 
-    // where is asJson?
-    // https://stackoverflow.com/questions/51671405/how-can-i-configure-circe-to-stop-using-nested-class-names-as-key-names-in-encod
     assert(p.asJson.toString() == json)
   }
 
