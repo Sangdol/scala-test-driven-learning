@@ -39,7 +39,9 @@ class PrimeSieve extends AnyFunSuite {
     // Why until?
     //   because of the way the candidates are generated in the loop
     for (i <- delta until upTo by delta) {
-      // This is slower than filtering by indexes. (?)
+      // This is slower than filtering by indexes.
+      //   Time Complexity: O(n x primesUpToSqrt)
+      //     -> we might do this in O(n)
       val candidates = (i + 1) to (i + delta)
       primes ++= candidates.filter(c =>
         !primesUpToSqrt.exists(p => c % p == 0 || c > upTo)
@@ -47,6 +49,25 @@ class PrimeSieve extends AnyFunSuite {
     }
 
     primes.toList
+  }
+
+  // recursive solution
+  def primeSieveFunctional(n: Int): List[Int] = {
+    // upTo = 100
+    // c = 2, primesToSqrt = []
+    // c = 3, primesToSqrt = []
+    // c = 4, primesToSqrt = [2]
+    // c = 5, primesToSqrt = [2]
+    // ...
+    // c = 10, primesToSqrt = [2, 3]
+    lazy val primes: LazyList[Int] = 2 #:: LazyList
+      .from(3)
+      .filter { c =>
+        val primesToSqrt = primes.takeWhile(p => p <= math.sqrt(c))
+        !primesToSqrt.exists(p => c % p == 0)
+      }
+
+    primes.take(n).toList
   }
 
   test("primeSieve") {
@@ -61,5 +82,12 @@ class PrimeSieve extends AnyFunSuite {
     assert(primeSieveSeg(7) == List(2, 3, 5, 7))
     assert(primeSieveSeg(10) == List(2, 3, 5, 7))
     assert(primeSieveSeg(15) == List(2, 3, 5, 7, 11, 13))
+  }
+
+  test("primeSieveFunctional") {
+    assert(primeSieveFunctional(3) == List(2, 3, 5))
+    assert(primeSieveFunctional(4) == List(2, 3, 5, 7))
+    assert(primeSieveFunctional(4) == List(2, 3, 5, 7))
+    assert(primeSieveFunctional(6) == List(2, 3, 5, 7, 11, 13))
   }
 }
