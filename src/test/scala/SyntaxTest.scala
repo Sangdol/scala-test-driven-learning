@@ -149,6 +149,9 @@ class SyntaxTest extends AnyFunSuite {
     assert(list === List("12", "21", "22"))
 
     // Generators / for comprehension
+    // Nested array same as:
+    // for (c <- ...)
+    //    for (i <- ...)
     val vector = for (c <- "Hello"; i <- 0 to 1) yield (c + i).toChar
 
     assert(vector.isInstanceOf[Vector[Char]])
