@@ -16,4 +16,10 @@ class TupleTest extends AnyFunSuite {
     assert((tuples match { case (a, b, c) => a }) == "Sang")
   }
 
+  test("Tuple signature") {
+    def returnTuple: (String, Int) = ("A", 1)
+
+    assert(returnTuple == ("A", 1))
+  }
+
 }
