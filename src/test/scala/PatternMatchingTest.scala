@@ -13,6 +13,16 @@ class PatternMatchingTest extends AnyFunSuite {
     // No way to reach the second and third?
     assert(matchTest(("a", Nil)) == "one")
     assert(matchTest(("", Nil)) == "one")
+
+    def matchTest2(t: (String, Seq[String])): String =
+      t match {
+        case (_, Nil) => "one"
+        case (a, strs) => "two"
+        case _ => "other"
+      }
+
+    assert(matchTest2(("a", Nil)) == "one")
+    assert(matchTest2(("", Seq("a"))) == "two")
   }
 
   // https://docs.scala-lang.org/tour/pattern-matching.html
