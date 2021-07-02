@@ -1,6 +1,20 @@
 import org.scalatest.funsuite.AnyFunSuite
 
 class PatternMatchingTest extends AnyFunSuite {
+
+  test("Nil match test") {
+    def matchTest(t: (String, Seq[String])): String =
+      t match {
+        case (a, strs) => "one"
+        case (_, Nil) => "two"
+        case _ => "other"
+      }
+
+    // No way to reach the second and third?
+    assert(matchTest(("a", Nil)) == "one")
+    assert(matchTest(("", Nil)) == "one")
+  }
+
   // https://docs.scala-lang.org/tour/pattern-matching.html
   test("Basic") {
     def matchTest(n: Int): String =
@@ -50,10 +64,9 @@ class PatternMatchingTest extends AnyFunSuite {
       person match {
         case p @ Person(name, 38) =>
           assert(p == Person(Name("Sang", "Lee"), 38))
-        case p @ Person(n @ Name(firstName, lastName), 37) => {
+        case p @ Person(n @ Name(firstName, lastName), 37) =>
           assert(n.firstName == "hj")
           assert(lastName == "Kim")
-        }
       }
     }
   }
