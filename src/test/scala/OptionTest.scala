@@ -17,4 +17,16 @@ class OptionTest extends AnyFunSuite {
     assertThrows[Exception](None.get)
   }
 
+  test("option empty") {
+    val none = Option.empty
+
+    assert(none.getClass.toString == "class scala.None$")
+
+    // This is needed sometimes...
+    // https://stackoverflow.com/a/24797748/524588
+    val str = Option.empty[String]
+
+    assert(str.getClass.toString == "class scala.None$")
+  }
+
 }
