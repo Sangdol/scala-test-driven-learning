@@ -1,9 +1,11 @@
+package lib
+
 import io.circe.generic.extras.Configuration
-import org.scalatest.funsuite.AnyFunSuite
 import io.circe.generic.semiauto._
-import io.circe.{ACursor, Decoder, Encoder, HCursor, Json}
 import io.circe.parser._
-import io.circe.syntax._ // Encoding and Decoding
+import io.circe.syntax._
+import io.circe._
+import org.scalatest.funsuite.AnyFunSuite // Encoding and Decoding
 
 /**
   * https://github.com/circe/circe
@@ -223,8 +225,8 @@ class CirceTest extends AnyFunSuite {
     * https://github.com/circe/circe-generic-extras
     */
   test("circe generic extras from document") {
-    import io.circe.generic.extras.semiauto._
     import io.circe.generic.extras.Configuration
+    import io.circe.generic.extras.semiauto._
 
     case class Foo(fooBar: String)
 

@@ -1,3 +1,5 @@
+package lib
+
 /**
  * ScalaTest At A Glance
  * http://www.scalatest.org/at_a_glance/WordSpec
