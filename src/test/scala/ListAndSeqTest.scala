@@ -15,6 +15,11 @@ class ListAndSeqTest extends AnyFunSuite {
     // Scala's List is Java's LinkedList
     // https://stackoverflow.com/questions/10866639/difference-between-a-seq-and-a-list-in-scala
     assert(Seq(1, 2).head == 1)
+
+    // TODO explanation about Seq and other data structure
+    assert(Seq(1, 2) ++ Seq(3, 4) == Seq(1, 2, 3, 4))
+    assert(Seq(1, 2) :+ 3 == Seq(1, 2, 3))
+    assert(0 +: Seq(1, 2) :+ 3 == Seq(1, 2, 3, 4))
   }
 
   test("Range: to, until, and by") {
