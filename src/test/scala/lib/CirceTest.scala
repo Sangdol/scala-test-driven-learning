@@ -240,6 +240,26 @@ class CirceTest extends AnyFunSuite {
                    |}""".stripMargin
 
     assert(Foo("a").asJson.toString() == result)
+
+    // JSON to Foo
+    assert(Foo("a").asJson.as[Foo].isRight)
+
+    // Not a very good way to decode (Double rights)
+    assert(parse(result).map(f => f.as[Foo]).isRight)
+
+    // Either --map--> double Either
+    val fooOption = parse(result).map(f => f.as[Foo]) match {
+      case Right(Right(foo)) => Option(foo)
+      case _ => None
+    }
+    assert(fooOption == Option(Foo("a")))
+
+    // https://edward-huang.com/scala/tech/soft-development/etl/circe/2019/11/28/6-quick-tips-to-parse-json-with-circe/
+    val fooOption2 = decode[Foo](result) match {
+      case Right(foo) => Option(foo)
+      case _ => None
+    }
+    assert(fooOption2 == Option(Foo("a")))
   }
 
   // Stackoverflow
@@ -298,6 +318,12 @@ class CirceTest extends AnyFunSuite {
                  |]""".stripMargin
 
     assert(p.asJson.toString() == json)
+
+    // Wrong way to decode
+    assert(json.asJson.as[Parent].isLeft)
+
+    // Right way to decode
+    assert(decode[Parent](json).getOrElse(None) == p)
   }
 
 }
