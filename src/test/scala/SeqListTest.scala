@@ -3,7 +3,16 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.collection.immutable.Range.Inclusive
 import scala.collection.mutable.ListBuffer
 
-class ListAndSeqTest extends AnyFunSuite {
+/**
+ * Seq (trait)
+ * - IndexedSeq: Vector, NumericRange, String, Range
+ * - LinearSeq: List, Stream, Queue, Stack
+ * https://stackoverflow.com/a/43457354/524588
+ *
+ * Performance Characteristics
+ * https://docs.scala-lang.org/overviews/collections-2.13/performance-characteristics.html
+ */
+class SeqListTest extends AnyFunSuite {
 
   test("Empty & Nil") {
     assert(List.empty == Nil)
@@ -11,12 +20,11 @@ class ListAndSeqTest extends AnyFunSuite {
   }
 
   test("Seq") {
-    // Scala's Seq is Java's List
-    // Scala's List is Java's LinkedList
+    // Scala's Seq is Java's List (interface)
+    // Scala's List is Java's LinkedList (implementation)
     // https://stackoverflow.com/questions/10866639/difference-between-a-seq-and-a-list-in-scala
     assert(Seq(1, 2).head == 1)
 
-    // TODO explanation about Seq and other data structure
     assert(Seq(1, 2) ++ Seq(3, 4) == Seq(1, 2, 3, 4))
     assert(Seq(1, 2) :+ 3 == Seq(1, 2, 3))
     assert(0 +: Seq(1, 2) :+ 3 == Seq(1, 2, 3, 4))
