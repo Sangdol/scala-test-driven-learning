@@ -155,30 +155,6 @@ class SyntaxTest extends AnyFunSuite {
     assert(vector.size == 10)
   }
 
-  test("for-comprehensions with lists") {
-    // https://docs.scala-lang.org/tour/for-comprehensions.html
-    val evens =
-      for (ns <- List(1, 2, 3) if ns % 2 == 0)
-        yield ns
-
-    assert(evens == List(2))
-
-    val evensDouble =
-      for {
-        ns <- List(1, 2, 3) if ns % 2 == 0
-        ds = ns * 2
-      } yield ds
-
-    assert(evensDouble == List(4))
-
-    val evensTriple =
-      for {
-        ns <- List(1, 2, 3) if ns % 2 == 0
-      } yield ns * 3
-
-    assert(evensTriple == List(6))
-  }
-
   test("infix, prefix, and postfix") {
     // import scala.language.postfixOps is needed for the first expression
     // Precedence: Prefix >  Infix > Postfix
@@ -268,8 +244,8 @@ class SyntaxTest extends AnyFunSuite {
 
   test("two element tuple literal") {
     val t1 = (1, 2)
-    val t2 = (1 -> 2)
-    val t3 = (1 → 2)
+    val t2 = 1 -> 2
+    val t3 = 1 → 2
     val t4 = Tuple2(1, 2)
 
     assert(t1 == t2)
