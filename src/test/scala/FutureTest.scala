@@ -16,7 +16,7 @@ class FutureTest extends AnyFunSuite {
       */
     val fsum1 = for {
       r1 <- Future(1)
-      r2 <- Future(2)
+      r2 <- Future(r1 * 2)
     } yield r1 + r2
 
     assert(Await.result(fsum1, 1.second) == 3)
@@ -29,7 +29,7 @@ class FutureTest extends AnyFunSuite {
     val f3 = Future(3)
 
     val fsum2 = for {
-      r1 <- f1
+      r1 <- f1//
       r2 <- f2
       r3 <- f3
     } yield r1 + r2 + r3
