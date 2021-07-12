@@ -21,4 +21,24 @@ class ScalaTestTest extends AnyFunSuite {
     result shouldBe 3
   }
 
+  test("Mocking trait") {
+    // https://dzone.com/articles/scala-replacing-trait-fake-one
+
+    trait T {
+      val hello = "hello"
+    }
+
+    class C extends T {
+      def helloWorld: String = s"$hello world"
+    }
+
+    trait FakeT extends T {
+      override val hello = "hallo"
+    }
+
+    val c = new C with FakeT
+
+    assert(c.helloWorld == "hallo world")
+  }
+
 }
