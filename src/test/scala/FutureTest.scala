@@ -21,6 +21,10 @@ class FutureTest extends AnyFunSuite {
 
     assert(Await.result(fsum1, 1.second) == 3)
 
+    // the above for-comprehension is equal to
+    val fsum11 = Future(1).flatMap(r1 => Future(r1 * 2).map(r2 => r1 + r2))
+    assert(Await.result(fsum11, 1.second) == 3)
+
     /**
       * Parallel solution
       */
@@ -28,8 +32,8 @@ class FutureTest extends AnyFunSuite {
     val f2 = Future(2)
     val f3 = Future(3)
 
-    val fsum2 = for {
-      r1 <- f1//
+    val fsum2: Future[Int] = for {
+      r1 <- f1
       r2 <- f2
       r3 <- f3
     } yield r1 + r2 + r3
