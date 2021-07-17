@@ -12,4 +12,10 @@ class LazyListStreamTest extends AnyFunSuite {
     assert(list == lazyList)
   }
 
+  test("iterate") {
+    val powers = LazyList.iterate(1)(_ * 2).take(3).toList
+
+    assert(powers == List(1, 2, 4))
+  }
+
 }
