@@ -161,4 +161,19 @@ class ClassTest extends AnyFunSuite {
     val p3 = new Point3(1, 2)
     p3.x
   }
+
+  test("inheritance") {
+    class Parent(n: Int) {
+      def getN: Int = n
+    }
+    class Child(n: Int) extends Parent(n) {
+      def getDoubleN: Int = n * 2
+    }
+
+    val p = new Parent(1)
+    assert(p.getN == 1)
+
+    val c = new Child(1)
+    assert(c.getDoubleN == 2)
+  }
 }
