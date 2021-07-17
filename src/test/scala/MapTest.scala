@@ -2,6 +2,17 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class MapTest extends AnyFunSuite {
 
+  test("flatMap") {
+    val graph: Map[String, Seq[String]] =
+      Map("a" -> Seq("b", "c"), "b" -> Seq("c"))
+
+    val edges: Map[String, String] = graph.flatMap {
+      case (v, neighbours) => neighbours.map(n => (v, n))
+    }
+
+    assert(edges.toSeq == Seq(("a", "c"), ("b", "c")))
+  }
+
   test("Map") {
     // Immutable map
     val scores = Map("Sang" -> 100)
@@ -11,7 +22,16 @@ class MapTest extends AnyFunSuite {
     assert(scores.contains("Sang"))
     assert(!scores.contains("HJ"))
     assert(scores.getOrElse("HJ", 110) == 110)
+  }
 
+  test("concat") {
+    val scores = Map[String, Int]()
+    val scores1 = scores + ("Sang" -> 100)
+    assert(scores1 == Map("Sang" -> 100))
+  }
+
+  test("default value") {
+    val scores = Map[String, Int]()
     val scoresWithDefault = scores.withDefaultValue(10)
 
     assert(scoresWithDefault("Miyu") == 10)
@@ -22,11 +42,11 @@ class MapTest extends AnyFunSuite {
   }
 
   test("Mutable Map") {
-    val scores = scala.collection.mutable.Map("Sang" -> 100)
+    var scores = scala.collection.mutable.Map("Sang" -> 100)
 
     assert(scores == Map(("Sang", 100)))
 
-    scores += (("HJ", 110), ("Yang", 90))
+    scores = scores + (("HJ", 110), ("Yang", 90))
 
     assert(scores.size == 3)
 
