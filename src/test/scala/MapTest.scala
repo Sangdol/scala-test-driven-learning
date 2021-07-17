@@ -6,11 +6,29 @@ class MapTest extends AnyFunSuite {
     val graph: Map[String, Seq[String]] =
       Map("a" -> Seq("b", "c"), "b" -> Seq("c"))
 
+    // Why "(v, neighbours) =>" or "((v, neighbours)) =>" doesn't work?
+    // Probably because the values in a tuple cannot spread into "((v, neighbours))".
     val edges: Map[String, String] = graph.flatMap {
       case (v, neighbours) => neighbours.map(n => (v, n))
     }
 
+    // A longer form of above
+    val edges2: Map[String, String] = graph.flatMap { element =>
+      element match {
+        case (v, neighbours) => neighbours.map(n => (v, n))
+      }
+    }
+
+    // this is not a correct way to get edges?
     assert(edges.toSeq == Seq(("a", "c"), ("b", "c")))
+    assert(edges == edges2)
+
+    val edges3: List[(String, String)] = graph.toList.flatMap {
+      case (v, neighbours) => neighbours.map(n => (v, n))
+    }
+
+    // This seems to be right.
+    assert(edges3 == Seq(("a", "b"), ("a", "c"), ("b", "c")))
   }
 
   test("Map") {
