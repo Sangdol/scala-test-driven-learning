@@ -4,15 +4,21 @@ import scala.collection.immutable.Range.Inclusive
 import scala.collection.mutable.ListBuffer
 
 /**
- * Seq (trait)
- * - IndexedSeq: Vector, NumericRange, String, Range
- * - LinearSeq: List, Stream, Queue, Stack
- * https://stackoverflow.com/a/43457354/524588
- *
- * Performance Characteristics
- * https://docs.scala-lang.org/overviews/collections-2.13/performance-characteristics.html
- */
+  * Seq (trait)
+  * - IndexedSeq: Vector, NumericRange, String, Range
+  * - LinearSeq: List, Stream, Queue, Stack
+  * https://stackoverflow.com/a/43457354/524588
+  *
+  * Performance Characteristics
+  * https://docs.scala-lang.org/overviews/collections-2.13/performance-characteristics.html
+  */
 class SeqListTest extends AnyFunSuite {
+
+  test("flatMap") {
+    val s = Seq(1, 2, 3)
+
+    assert(s.flatMap { n => Seq(n, n + 1) } == Seq(1, 2, 2, 3, 3, 4))
+  }
 
   test("Empty & Nil") {
     assert(List.empty == Nil)
