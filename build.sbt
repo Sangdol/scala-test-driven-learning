@@ -15,7 +15,9 @@ lazy val circe = Seq(
 // What does ++=, %, %% mean?
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
+  "org.scalacheck" %% "scalacheck" % "1.14.1" % "test",
+  "org.mockito" %% "mockito-scala" % "1.13.9" % Test,
+  "org.mockito" %% "mockito-scala-scalatest" % "1.13.9" % Test
 ) ++ circe
 
 // https://www.scala-sbt.org/1.x/docs/Howto-Scala.html
