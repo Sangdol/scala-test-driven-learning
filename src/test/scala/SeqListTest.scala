@@ -14,6 +14,14 @@ import scala.collection.mutable.ListBuffer
   */
 class SeqListTest extends AnyFunSuite {
 
+  test("collect") {
+    // http://allaboutscala.com/tutorials/chapter-8-beginner-tutorial-using-scala-collection-functions/scala-collect-function/
+    val s = Seq("a", 1, "b")
+    val ss = s.collect {case str: String => str}
+
+    assert(ss == Seq("a", "b"))
+  }
+
   test("flatMap") {
     val s = Seq(1, 2, 3)
 
