@@ -11,7 +11,7 @@ class EnumerationTest extends AnyFunSuite {
     assert(Color.RED.toString == "red")
   }
 
-  test("case class") {
+  test("Enum with case class val") {
 
     object Multiple extends Enumeration {
       // Why private?
