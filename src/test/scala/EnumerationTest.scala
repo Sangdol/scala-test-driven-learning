@@ -15,6 +15,8 @@ class EnumerationTest extends AnyFunSuite {
 
     object Multiple extends Enumeration {
       // Why private?
+      // to hide the constructor / only without new
+      // https://stackoverflow.com/questions/20030826/scala-case-class-private-constructor-but-public-apply-method
       final case class MultipleVal private (mid: String, name: String) extends super.Val(mid)
 
       type Multiple = MultipleVal
