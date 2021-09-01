@@ -14,6 +14,11 @@ import scala.collection.mutable.ListBuffer
   */
 class SeqListTest extends AnyFunSuite {
 
+  test("flatten") {
+    // https://alvinalexander.com/scala/how-to-flatten-list-lists-in-scala-with-flatten-method/
+    assert(Seq(Seq(1, 2), Seq(3, 4)).flatten == Seq(1, 2, 3, 4))
+  }
+
   test("collect") {
     // http://allaboutscala.com/tutorials/chapter-8-beginner-tutorial-using-scala-collection-functions/scala-collect-function/
     val s = Seq("a", 1, "b")
