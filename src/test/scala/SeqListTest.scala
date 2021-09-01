@@ -17,6 +17,16 @@ class SeqListTest extends AnyFunSuite {
   test("flatten") {
     // https://alvinalexander.com/scala/how-to-flatten-list-lists-in-scala-with-flatten-method/
     assert(Seq(Seq(1, 2), Seq(3, 4)).flatten == Seq(1, 2, 3, 4))
+
+    assert(Seq(Map(1 -> 2), Map(3 -> 4)).flatten == Seq((1, 2), (3, 4)))
+  }
+
+  test("groupBy") {
+    assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2) ==
+      Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
+
+    assert(Seq(Map(1 -> "a"), Map(2 -> "b"), Map(3 -> "a")).flatten.groupBy(_._2) ==
+      Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
   }
 
   test("collect") {
