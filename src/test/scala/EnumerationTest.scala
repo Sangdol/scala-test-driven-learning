@@ -11,6 +11,9 @@ class EnumerationTest extends AnyFunSuite {
     assert(Color.RED.toString == "red")
   }
 
+  /**
+   * https://www.scala-lang.org/api/current/scala/Enumeration.html
+   */
   test("Enum with case class val") {
 
     object Multiple extends Enumeration {
