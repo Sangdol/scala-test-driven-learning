@@ -293,6 +293,7 @@ class CirceTest extends AnyFunSuite {
 
     // Where is asJson?
     //   In Encoder (Type Class Pattern (with implicit classes))
+    //   import io.circe.syntax.EncoderOps is needed.
     // https://stackoverflow.com/questions/51671405/how-can-i-configure-circe-to-stop-using-nested-class-names-as-key-names-in-encod
     assert(p.asJson.toString() == json)
   }
