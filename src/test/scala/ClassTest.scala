@@ -123,6 +123,27 @@ class ClassTest extends AnyFunSuite {
     assert(bookGenerator2("111").isbn == "ISBN: 111")
   }
 
+  test("Case Class default arguments") {
+    case class Book1(title: String = "", year: Int)
+
+    val b1 = Book1("b1", 2021)
+
+    assert(b1.title == "b1")
+    assert(b1.year == 2021)
+
+    val b11 = Book1(year=2022)
+
+    assert(b11.title == "")
+    assert(b11.year == 2022)
+
+    case class Book2(year: Int, title: String = "")
+
+    val b2 = Book2(2021)
+
+    assert(b2.year == 2021)
+    assert(b2.title == "")
+  }
+
   test("Self-Type") {
     // https://docs.scala-lang.org/tour/self-types.html
     trait User {
