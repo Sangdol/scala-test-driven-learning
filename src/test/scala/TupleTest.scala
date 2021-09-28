@@ -22,4 +22,15 @@ class TupleTest extends AnyFunSuite {
     assert(returnTuple == ("A", 1))
   }
 
+  test("Splitting Tuple Seq") {
+    val (a, b) = Seq(("a", 1), ("b", 2)).unzip
+
+    assert(a == Seq("a", "b"))
+    assert(b == Seq(1, 2))
+
+    val (_, _, c) = Seq(("a", 1, 0), ("b", 2, 0)).unzip3
+
+    assert(c == Seq(0, 0))
+  }
+
 }
