@@ -1,5 +1,6 @@
 import org.scalatest.funsuite.AnyFunSuite
 
+import java.time.temporal.ChronoUnit
 import java.time.{Duration, Instant}
 
 class TimeTest extends AnyFunSuite {
@@ -15,5 +16,10 @@ class TimeTest extends AnyFunSuite {
     val instant2 = Instant.parse("2019-04-21T05:25:00Z");
 
     assert(Duration.between(instant1, instant2).toDays == 65)
+
+    val instant3 = Instant.EPOCH
+    val instant4 = Instant.EPOCH.plus(1, ChronoUnit.DAYS)
+
+    assert(Duration.between(instant3, instant4).toDays == 1)
   }
 }
