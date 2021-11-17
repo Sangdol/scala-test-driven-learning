@@ -1,3 +1,4 @@
+import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -7,6 +8,7 @@ class MockitoTest extends AnyWordSpec with MockitoSugar  {
 
   class Person {
     def hi(): String = "hi"
+    def hello(who: String): String = s"Hello, $who!"
   }
 
   trait Setup {
@@ -27,6 +29,15 @@ class MockitoTest extends AnyWordSpec with MockitoSugar  {
         person1.hi()
 
         verify(person1).hi()
+      }
+    }
+
+    // https://stackoverflow.com/a/14970545/524588
+    "thenCallRealMethod()" should {
+      "return real value" in new Setup {
+        when(person1.hello(any[String])).thenCallRealMethod()
+
+        assert(person1.hello("World") == "Hello, World!")
       }
     }
   }
