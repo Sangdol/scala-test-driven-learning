@@ -342,6 +342,27 @@ class CirceTest extends AnyFunSuite {
     // https://stackoverflow.com/a/66967469/524588
     implicit val encoderColor: Encoder[Color.Color] = Encoder.encodeEnumeration(Color)
     implicit val decoderColor: Decoder[Color.Color] = Decoder.decodeEnumeration(Color)
+
+    val red = Color.RED
+
+    assert(red.asJson.toString() == "\"red\"")
+  }
+
+  test("enum with case class") {
+    import io.circe.generic.extras.semiauto._
+
+    implicit val conf: Configuration = Configuration.default.withSnakeCaseMemberNames
+
+    object Color extends Enumeration {
+      type Color = Value
+      val RED = Value("red")
+    }
+
+    case class Palette(color: Color.Color)
+
+    // https://stackoverflow.com/a/66967469/524588
+    implicit val encoderColor: Encoder[Color.Color] = Encoder.encodeEnumeration(Color)
+    implicit val decoderColor: Decoder[Color.Color] = Decoder.decodeEnumeration(Color)
     implicit val encoderPalette: Encoder[Palette] = deriveConfiguredEncoder
     implicit val decoderPalette: Decoder[Palette] = deriveConfiguredDecoder
 
