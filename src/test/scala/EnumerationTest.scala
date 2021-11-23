@@ -5,10 +5,30 @@ class EnumerationTest extends AnyFunSuite {
   test("get name") {
     object Color extends Enumeration {
       type Color = Value
+
       val RED = Value("red")
     }
 
     assert(Color.RED.toString == "red")
+  }
+
+  test("method of value") {
+    // https://stackoverflow.com/a/19080686/524588
+    object Color extends Enumeration {
+      abstract class ColorValue(var name: String) extends Val(name) {
+        def m: Int
+      }
+
+      val RED = new ColorValue("red") {
+        def m = 0
+      }
+      val BLUE = new ColorValue("blue") {
+        def m = 1
+      }
+    }
+
+    assert(Color.RED.m == 0)
+    assert(Color.BLUE.m == 1)
   }
 
   /**
