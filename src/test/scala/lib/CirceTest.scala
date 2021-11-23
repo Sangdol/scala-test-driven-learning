@@ -353,6 +353,32 @@ class CirceTest extends AnyFunSuite {
     assert(red.asJson.toString() == json)
   }
 
+  test("enum with id") {
+    import io.circe.generic.extras.semiauto._
+
+    implicit val conf: Configuration = Configuration.default.withSnakeCaseMemberNames
+
+    object Color extends Enumeration {
+      type Color = Value
+      val RED = Value(1, "red")
+    }
+
+    case class Palette(color: Color.Color)
+
+    // https://stackoverflow.com/a/66967469/524588
+    implicit val encoderColor: Encoder[Color.Color] = Encoder.encodeEnumeration(Color)
+    implicit val decoderColor: Decoder[Color.Color] = Decoder.decodeEnumeration(Color)
+    implicit val encoderPalette: Encoder[Palette] = deriveConfiguredEncoder
+    implicit val decoderPalette: Decoder[Palette] = deriveConfiguredDecoder
+
+    val red = Palette(Color.RED)
+
+    val json = """{
+                 |  "color" : "red"
+                 |}""".stripMargin
+    assert(red.asJson.toString() == json)
+  }
+
   test("enum with method") {
     import io.circe.generic.extras.semiauto._
 

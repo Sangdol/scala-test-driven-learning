@@ -2,6 +2,24 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class EnumerationTest extends AnyFunSuite {
 
+  test("enum id") {
+    object Color extends Enumeration {
+      type Color = Value
+      val RED, BLUE = Value
+    }
+
+    assert(Color.RED.id == 0)
+    assert(Color.BLUE.id == 1)
+
+    object Color2 extends Enumeration {
+      type Color = Value
+      val RED = Value(1, "red")
+      val BLUE = Value(2, "red")
+    }
+    assert(Color2.RED.id == 1)
+    assert(Color2.BLUE.id == 2)
+  }
+
   test("get name") {
     object Color extends Enumeration {
       type Color = Value
