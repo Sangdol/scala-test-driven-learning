@@ -2,6 +2,22 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class EnumerationTest extends AnyFunSuite {
 
+  test("string to enum") {
+    // https://stackoverflow.com/questions/33593525/scala-safe-way-of-converting-string-to-enumeration-value
+    object Color extends Enumeration {
+      type Color = Value
+      val RED = Value(1, "red")
+      val BLUE = Value(2, "blue")
+
+      def withNameOpt(s: String): Option[Value] = values.find(_.toString == s)
+    }
+
+    assert(Color.withName("red") == Color.RED)
+    assertThrows[NoSuchElementException](Color.withName("not-found"))
+
+    assert(Color.withNameOpt("red") == Some(Color.RED))
+  }
+
   test("enum id") {
     object Color extends Enumeration {
       type Color = Value
@@ -14,7 +30,7 @@ class EnumerationTest extends AnyFunSuite {
     object Color2 extends Enumeration {
       type Color = Value
       val RED = Value(1, "red")
-      val BLUE = Value(2, "red")
+      val BLUE = Value(2, "blue")
     }
     assert(Color2.RED.id == 1)
     assert(Color2.BLUE.id == 2)
