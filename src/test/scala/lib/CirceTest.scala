@@ -5,6 +5,7 @@ import io.circe.generic.semiauto._
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe._
+import io.circe.generic.extras.semiauto.deriveUnwrappedEncoder
 import org.scalatest.funsuite.AnyFunSuite // Encoding and Decoding
 
 /**
@@ -325,6 +326,29 @@ class CirceTest extends AnyFunSuite {
 
     // Right way to decode
     assert(decode[Parent](json).getOrElse(None) == p)
+  }
+
+  test("enum") {
+    import io.circe.generic.extras.semiauto._
+
+    implicit val conf: Configuration = Configuration.default.withSnakeCaseMemberNames
+
+    object Color extends Enumeration {
+      type Color = Value
+      val RED = Value("red")
+    }
+
+    case class Palette(color: Color.Color)
+
+    // https://stackoverflow.com/a/66967469/524588
+    implicit val encoderColor: Encoder[Color.Color] = Encoder.encodeEnumeration(Color)
+    implicit val decoderColor: Decoder[Color.Color] = Decoder.decodeEnumeration(Color)
+    implicit val encoderPalette: Encoder[Palette] = deriveUnwrappedEncoder
+    implicit val decoderPalette: Decoder[Palette] = deriveUnwrappedDecoder
+
+    val red = Palette(Color.RED)
+
+    assert(red.asJson.toString() == "red")
   }
 
 }
