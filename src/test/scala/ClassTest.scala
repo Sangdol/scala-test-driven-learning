@@ -197,4 +197,25 @@ class ClassTest extends AnyFunSuite {
     val c = new Child(1)
     assert(c.getDoubleN == 2)
   }
+
+  /**
+   * https://stackoverflow.com/questions/9443004/what-does-the-operator-mean-in-scala
+   */
+  test("# nested class") {
+    class A {
+      class B
+
+      def f(b: B) = 1
+      def g(b: A#B) = 2
+    }
+
+    val a1 = new A
+    val a2 = new A
+
+    // This is not possible since nested classes are path dependent.
+    //a2.f(new a1.B)
+
+    assert(a1.g(new a1.B) == 1)
+    assert(a2.g(new a1.B) == 2)
+  }
 }
