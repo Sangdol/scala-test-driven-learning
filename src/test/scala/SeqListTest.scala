@@ -25,6 +25,10 @@ class SeqListTest extends AnyFunSuite {
     assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2) ==
       Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
 
+    // A way to do distinctBy below Scala 2.13.
+    assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2).flatMap(_._2.headOption).toList ==
+      Seq((1, "a"), (2, "b")))
+
     assert(Seq(Map(1 -> "a"), Map(2 -> "b"), Map(3 -> "a")).flatten.groupBy(_._2) ==
       Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
   }
@@ -56,7 +60,7 @@ class SeqListTest extends AnyFunSuite {
 
     assert(Seq(1, 2) ++ Seq(3, 4) == Seq(1, 2, 3, 4))
     assert(Seq(1, 2) :+ 3 == Seq(1, 2, 3))
-    assert(0 +: Seq(1, 2) :+ 3 == Seq(1, 2, 3, 4))
+    assert(0 +: Seq(1, 2) :+ 3 == Seq(0, 1, 2, 3))
   }
 
   test("Range: to, until, and by") {
