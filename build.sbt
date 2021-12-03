@@ -25,9 +25,14 @@ lazy val akka = Seq(
 // What does ++=, %, %% mean?
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.14.1" % "test",
   "org.mockito" %% "mockito-scala" % "1.13.9" % Test,
-  "org.mockito" %% "mockito-scala-scalatest" % "1.13.9" % Test
+  "org.mockito" %% "mockito-scala-scalatest" % "1.13.9" % Test,
+
+  // Property-based testing
+  // https://scalacheck.org/
+  // https://www.scalatest.org/user_guide/property_based_testing
+  "org.scalacheck" %% "scalacheck" % "1.15.3" % "test",
+  "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test"
 ) ++ circe ++ akka
 
 // https://www.scala-sbt.org/1.x/docs/Howto-Scala.html
