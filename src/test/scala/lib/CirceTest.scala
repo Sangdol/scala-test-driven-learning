@@ -324,7 +324,21 @@ class CirceTest extends AnyFunSuite {
     assert(json.asJson.as[Parent].isLeft)
 
     // Right way to decode
-    assert(decode[Parent](json).getOrElse(None) == p)
+    val pp = decode[Parent](json).getOrElse(None)
+    assert(pp == p)
+
+    // getOrElse returns Product trait (the super class (trait) of Parent)
+    // so `pp.children` doesn't work.
+    assert(pp.isInstanceOf[Product])
+    assert(pp.isInstanceOf[Parent])
+
+    // This can be converted
+    val ppp = pp.asInstanceOf[Parent]
+    assert(ppp.children == p.children)
+
+    // Or it's possible to get Parent directly
+    val pp2 = decode[Parent](json).toOption.get
+    assert(pp2.children == p.children)
   }
 
   test("enum") {
