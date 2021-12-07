@@ -41,3 +41,16 @@ console / initialCommands := """
 
   println("fpinscala is imported")
 """
+
+/**
+ * https://www.scala-sbt.org/1.x/docs/Process.html
+ */
+
+import scala.sys.process._
+
+// Definition: constructing a new slot
+val gitHeadCommitSha = taskKey[String]("Git commmit SHA")
+
+// Setting: constructing a function that will compute the value
+//
+gitHeadCommitSha := Process("git rev-parse HEAD").lineStream.head
