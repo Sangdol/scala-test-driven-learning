@@ -9,6 +9,18 @@ class FutureTest extends AnyFunSuite {
   /**
     * https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
     */
+  test("basic for comprehension") {
+    val f = for {
+      r1 <- Future(3)
+    } yield r1
+
+    assert(Await.result(f, 1.second) == 3)
+
+    // the above for-comprehension is equal to
+    val ff = Future(1).flatMap(Future(_))
+    assert(Await.result(ff, 1.second) == 3)
+  }
+
   test("for comprehension with futures") {
 
     /**
