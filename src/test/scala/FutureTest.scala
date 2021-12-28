@@ -4,11 +4,11 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
+/**
+  * Doc https://docs.scala-lang.org/overviews/core/futures.html
+  */
 class FutureTest extends AnyFunSuite {
 
-  /**
-    * https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
-    */
   test("basic for comprehension") {
     val f = for {
       r1 <- Future(3)
@@ -21,6 +21,9 @@ class FutureTest extends AnyFunSuite {
     assert(Await.result(ff, 1.second) == 3)
   }
 
+  /**
+    * https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
+    */
   test("for comprehension with futures") {
 
     /**
