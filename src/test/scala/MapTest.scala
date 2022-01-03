@@ -102,4 +102,21 @@ class MapTest extends AnyFunSuite {
     assert(scores.values.isInstanceOf[Iterable[Int]])
   }
 
+  test("Merge maps: override") {
+    val m1 = Map("a" -> 1, "b" -> 2)
+    val m2 = Map("a" -> 2, "c" -> 3)
+    val merged = m1 ++ m2
+
+    assert(merged == Map("a" -> 2, "b" -> 2, "c" -> 3))
+  }
+
+  test("Merge maps: groupMap") {
+    // from Scala 2.13
+    val m1 = Map("a" -> 1, "b" -> 2)
+    val m2 = Map("a" -> 2, "c" -> 3)
+    val merged = (m1.toSeq ++ m2).groupMap(_._1)(_._2)
+
+    assert(merged == Map("a" -> Seq(1, 2), "b" -> Seq(2), "c" -> Seq(3)))
+  }
+
 }
