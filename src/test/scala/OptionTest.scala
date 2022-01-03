@@ -10,6 +10,11 @@ class OptionTest extends AnyFunSuite {
     val DEFAULT = 100
 
     assert(two.fold(DEFAULT)(f) == 3)
+    assert(two.fold({
+      val a = 1
+      val b = 2
+      a + b
+    })(f) == 3)
     assert(two.map(f).getOrElse(DEFAULT) == 3)
   }
 
