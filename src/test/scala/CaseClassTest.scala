@@ -46,4 +46,14 @@ class CaseClassTest extends AnyFunSuite {
     assert(b2.year == 2021)
     assert(b2.title == "")
   }
+
+  test("toString") {
+    case class Book(title: String = "", year: Option[Int])
+
+    val b1 = Book("hi", None)
+    assert(b1.toString == "Book(hi,None)")
+
+    val b2 = Book("hi", Some(1))
+    assert(b2.toString == "Book(hi,Some(1))")
+  }
 }
