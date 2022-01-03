@@ -29,4 +29,13 @@ class OptionTest extends AnyFunSuite {
     assert(str.getClass.toString == "class scala.None$")
   }
 
+  test("orElse, getOrElse") {
+    val two = Some(2)
+    val someTwo = two.orElse(Some(3))
+    val stillTwo = two.getOrElse(3)
+
+    assert(someTwo == Some(2))
+    assert(stillTwo == 2)
+  }
+
 }
