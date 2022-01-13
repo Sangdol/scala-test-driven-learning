@@ -17,7 +17,7 @@ class FutureTest extends AnyFunSuite {
     assert(Await.result(f, 1.second) == 3)
 
     // the above for-comprehension is equal to
-    val ff = Future(1).flatMap(Future(_))
+    val ff = Future(3).flatMap(Future(_))
     assert(Await.result(ff, 1.second) == 3)
   }
 
@@ -60,6 +60,24 @@ class FutureTest extends AnyFunSuite {
     //    val sum = Await.result(fsum, 1 second)
 
     assert(sum == 6)
+
+    // the above for-comprehension is equal to
+    val fsum21 = Future(1).flatMap(r1 => Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3)))
+    assert(Await.result(fsum21, 1.second) == 6)
   }
 
+  test("conditional for comprehension") {
+    // It seems it's not possible to write this with one for comprehension
+    def condF(i: Int): Future[Int] = {
+      Future(i).flatMap(r1 =>
+        if (r1 > 0)
+          Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3))
+        else
+          Future(3).map(r3 => r1 + r3)
+        )
+    }
+
+    assert(Await.result(condF(0), 1.second) == 3)
+    assert(Await.result(condF(1), 1.second) == 6)
+  }
 }
