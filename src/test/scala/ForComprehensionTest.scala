@@ -157,7 +157,7 @@ class ForComprehensionTest extends AnyFunSuite {
     val e = s2 match {
       case Failure(e) => e
     }
-    assert(e.getClass.getSimpleName == "AssertionError")
+    assert(e.getClass.getSimpleName == "TestFailedException")
   }
 
   test("list") {
