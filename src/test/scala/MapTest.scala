@@ -119,4 +119,14 @@ class MapTest extends AnyFunSuite {
     assert(merged == Map("a" -> Seq(1, 2), "b" -> Seq(2), "c" -> Seq(3)))
   }
 
+  test("Add tuple") {
+    val m = Map("a" -> 1)
+    val t = ("b", 2)
+
+    assert(m + t == Map("a" -> 1, "b" -> 2))
+
+    // Need double parentheses
+    // https://stackoverflow.com/questions/40221310/add-tuple-to-map/40222241
+    assert(m + (("b", 2)) == Map("a" -> 1, "b" -> 2))
+  }
 }
