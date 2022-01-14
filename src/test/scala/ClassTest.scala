@@ -170,7 +170,7 @@ class ClassTest extends AnyFunSuite {
     // This is not possible since nested classes are path dependent.
     //a2.f(new a1.B)
 
-    assert(a1.g(new a1.B) == 1)
+    assert(a1.f(new a1.B) == 1)
     assert(a2.g(new a1.B) == 2)
   }
 }
