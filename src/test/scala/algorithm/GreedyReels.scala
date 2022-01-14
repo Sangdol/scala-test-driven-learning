@@ -34,7 +34,7 @@ class GreedyReels extends AnyFunSuite {
       ._2
   }
 
-  test("whichReels") {
+  test("whichReelsTuple") {
     assert(whichReelsTuple(1) == List(1))
     assert(whichReelsTuple(2) == List(2))
     assert(whichReelsTuple(3) == List(2, 1))
