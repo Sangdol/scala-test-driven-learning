@@ -43,4 +43,23 @@ class OptionTest extends AnyFunSuite {
     assert(stillTwo == 2)
   }
 
+  test("many options") {
+    val o1 = Some(1)
+    val o2 = Option.empty[Int]
+    val o3 = Some(3)
+
+    val partialSum = (o1, o2, o3) match {
+      case (Some(one), Some(two), Some(three)) => one + two + three
+      // how could I put 'None' here?
+      // pattern type is incompatible with expected type;
+      //  [error]  found   : None.type
+      //  [error]  required: Some[Int]
+      //case (Some(one), Some(two), _) => one + two
+      case (Some(one), Some(two), _) => one + two
+      case (Some(one), None, Some(three)) => one + three
+      case _ => 0
+    }
+
+    assert(partialSum == 4)
+  }
 }
