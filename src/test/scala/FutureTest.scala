@@ -67,8 +67,20 @@ class FutureTest extends AnyFunSuite {
   }
 
   test("conditional for comprehension") {
+
+    def condF1(i: Int): Future[Int] = {
+      for {
+        r1 <- Future(i)
+        r2 <- if (r1 > 0) Future(2) else Future(0)
+      } yield r1 + r2
+    }
+
+    assert(Await.result(condF1(1), 1.second) == 3)
+    assert(Await.result(condF1(0), 1.second) == 0)
+
     // It seems it's not possible to write this with one for comprehension
-    def condF(i: Int): Future[Int] = {
+    // => did it with an additional Future(0) - see condF3.
+    def condF2(i: Int): Future[Int] = {
       Future(i).flatMap(r1 =>
         if (r1 > 0)
           Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3))
@@ -77,7 +89,21 @@ class FutureTest extends AnyFunSuite {
         )
     }
 
-    assert(Await.result(condF(0), 1.second) == 3)
-    assert(Await.result(condF(1), 1.second) == 6)
+    assert(Await.result(condF2(0), 1.second) == 3)
+    assert(Await.result(condF2(1), 1.second) == 6)
+
+    def condF3(i: Int): Future[Int] = {
+      val f = Future(i)
+
+      for {
+        r1 <- Future(i)
+        r2 <- if (r1 >0) Future(2) else Future(0)
+        r3 <- Future(3)
+      } yield r1 + r2 + r3
+    }
+
+    assert(Await.result(condF3(0), 1.second) == 3)
+    assert(Await.result(condF3(1), 1.second) == 6)
   }
+
 }
