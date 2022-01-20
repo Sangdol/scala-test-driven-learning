@@ -106,4 +106,28 @@ class FutureTest extends AnyFunSuite {
     assert(Await.result(condF3(1), 1.second) == 6)
   }
 
+  test("sequence and recover") {
+    val f1 = Future(1)
+    val f2 = Future(2)
+    val fs = Future.sequence(Seq(f1, f2))
+
+    assert(Await.result(fs, 1.second).sum == 3)
+
+    val ff = Future.failed(new Exception())
+    val fs2 = Future.sequence(Seq(f1, ff))
+
+    assertThrows[Exception](Await.result(fs2, 1.second))
+
+    val fr1 = fs2.recover {
+      case e: Exception => 0
+    }
+
+    assert(Await.result(fr1, 1.second) == 0)
+
+    val fr2 = fs2.recoverWith {
+      case e: Exception => Future(-1)
+    }
+    assert(Await.result(fr2, 1.second) == -1)
+  }
+
 }
