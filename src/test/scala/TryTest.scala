@@ -42,4 +42,17 @@ class TryTest extends AnyFunSuite {
     assert(e.isFailure)
   }
 
+  test("flatten Tries") {
+    val tt: Try[Try[Int]] = Try(Try(1))
+
+    assert(tt.flatten == Try(1))
+  }
+
+  test("flatten list") {
+    val s: Seq[Try[Int]] = Seq(Try(1), Try(2), Try(1/0))
+    val (failures, successes) = s.partitionMap(_.toEither)
+
+    assert(successes.sum == 3)
+  }
+
 }
