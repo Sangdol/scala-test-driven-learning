@@ -21,4 +21,12 @@ class EitherTest extends AnyFunSuite {
 
     assert(j == Left("nonpositive number -15"))
   }
+
+  test("partitionMap") {
+    val es = Seq(Left(1), Right("oh"), Left(2))
+    val (lefts, rights) = es.partitionMap(identity)
+
+    assert(lefts == Seq(1, 2))
+    assert(rights == Seq("oh"))
+  }
 }
