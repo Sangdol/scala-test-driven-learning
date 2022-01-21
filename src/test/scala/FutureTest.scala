@@ -131,7 +131,33 @@ class FutureTest extends AnyFunSuite {
     assert(Await.result(fr2, 1.second) == -1)
   }
 
-  test("sequence and failure separation") {
+  test("sequence and failure separation 1") {
+    val f1 = Future(1)
+    val f2 = Future(2)
+    val ff = Future.failed(new Exception())
+
+    // transform(f: Try[T] => Try[S])
+    val futures: Seq[Future[Try[Int]]] =
+      Seq(f1, f2, ff).map(_.transform(Try(_)))
+
+    val sum = Future
+      .sequence(futures)
+      .map { tries =>
+        val (failures, successes) = tries.partitionMap {
+          case Success(n) => Right(n)
+          case Failure(n) => Left(n)
+        }
+
+        val fsum = failures.map(_ => 100).sum
+        val ssum = successes.sum
+
+        fsum + ssum
+      }
+
+    assert(Await.result(sum, 1.second) == 103)
+  }
+
+  test("sequence and failure separation 2") {
     val f1 = Future(1)
     val f2 = Future(2)
     val ff = Future.failed(new Exception())
@@ -152,6 +178,28 @@ class FutureTest extends AnyFunSuite {
       }
 
     assert(Await.result(sum, 1.second) == 103)
+  }
+
+  // https://stackoverflow.com/questions/20874186/scala-listfuture-to-futurelist-disregarding-failed-futures
+  test("sequence and failure separation 3") {
+    val f1 = Future(1)
+    val f2 = Future(2)
+    val ff = Future.failed(new Exception())
+
+    // transform(f: Try[T] => Try[S])
+    val futures: Seq[Future[Try[Int]]] = Seq(f1, f2, ff).map(_.transform(Try(_)))
+    val futureTries: Future[Seq[Try[Int]]] = Future.sequence(futures)
+
+    // It's not very easy to flatten Tries
+    // https://stackoverflow.com/questions/15495678/flatten-scala-try
+    val failureTries: Future[Seq[Try[Int]]] = futureTries.map(_.filter(_.isFailure))
+    val successeTries: Future[Seq[Try[Int]]] = futureTries.map(_.filter(_.isSuccess))
+
+    // _.collect() to remove Try
+    val failures: Future[Seq[Throwable]] = futureTries.map(_.collect{case Failure(x) => x})
+    val successes: Future[Seq[Int]] = futureTries.map(_.collect{case Success(x) => x})
+
+    assert(Await.result(successes, 1.second).sum == 3)
   }
 
 }
