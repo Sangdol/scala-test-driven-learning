@@ -3,6 +3,7 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.util._
 
 /**
   * Doc https://docs.scala-lang.org/overviews/core/futures.html
@@ -128,6 +129,29 @@ class FutureTest extends AnyFunSuite {
       case e: Exception => Future(-1)
     }
     assert(Await.result(fr2, 1.second) == -1)
+  }
+
+  test("sequence and failure separation") {
+    val f1 = Future(1)
+    val f2 = Future(2)
+    val ff = Future.failed(new Exception())
+
+    // transform(f: Try[T] => Try[S])
+    val futures: Seq[Future[Either[Throwable, Int]]] =
+      Seq(f1, f2, ff).map(_.transform(f => Success(f.toEither)))
+
+    val sum = Future
+      .sequence(futures)
+      .map { eithers =>
+        val (failures, successes) = eithers.partitionMap(identity)
+
+        val fsum = failures.map(_ => 100).sum
+        val ssum = successes.sum
+
+        fsum + ssum
+      }
+
+    assert(Await.result(sum, 1.second) == 103)
   }
 
 }
