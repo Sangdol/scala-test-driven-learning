@@ -58,9 +58,11 @@ class SeqListTest extends AnyFunSuite {
     // https://stackoverflow.com/questions/10866639/difference-between-a-seq-and-a-list-in-scala
     assert(Seq(1, 2).head == 1)
 
-    assert(Seq(1, 2) ++ Seq(3, 4) == Seq(1, 2, 3, 4))
-    assert(Seq(1, 2) :+ 3 == Seq(1, 2, 3))
-    assert(0 +: Seq(1, 2) :+ 3 == Seq(0, 1, 2, 3))
+    // Seq[Int] => List[Int]
+    // List if optimized to prepend
+    assert(Seq(1, 2) ++ Seq(3, 4) == Seq(1, 2, 3, 4)) // O(n)
+    assert(Seq(1, 2) :+ 3 == Seq(1, 2, 3)) // O(n)
+    assert(0 +: Seq(1, 2) == Seq(0, 1, 2)) // O(1)
   }
 
   test("Range: to, until, and by") {
