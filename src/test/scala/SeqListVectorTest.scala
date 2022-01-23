@@ -218,12 +218,13 @@ class SeqListVectorTest extends AnyFunSuite {
 
   test("vector") {
     val v1 = Vector(1, 2, 3)
-
     assert(v1(0) == 1)
 
     val v2 = v1.updated(0, -1)
-
     assert(v2 == Vector(-1, 2, 3))
+
+    val v3 = v1 ++ v2
+    assert(v3 == Vector(1, 2, 3, -1, 2, 3))
   }
 
 }
