@@ -93,4 +93,31 @@ class EnumerationTest extends AnyFunSuite {
     assert(Multiple.withName("1") == Multiple.sang)
     assert(Multiple.withName("1").asInstanceOf[Multiple.MultipleVal] == Multiple.sang)
   }
+
+  test("Case class as enum") {
+    /**
+     * https://stackoverflow.com/questions/1898932/case-objects-vs-enumerations-in-scala
+     *
+     * Pros
+     * - Easily extensible (in terms of adding functions)
+     * - Pattern matching and a compiler check for a full specification
+     * - Natural supports multiple arguments
+     *
+     * Cons
+     * - More code to write
+     * - No iterator over all instances
+     * - No withName()
+     */
+    sealed trait Color { def name: String }
+    case object RED extends Color { def name = "red" }
+    case object BLUE extends Color { def name = "blue" }
+
+    val c: Color = RED
+    val a = c match {
+      case RED => "r"
+      case BLUE => "b"
+    }
+
+    assert(a == "r")
+  }
 }
