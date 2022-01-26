@@ -112,4 +112,29 @@ class PatternMatchingTest extends AnyFunSuite {
 
     assert(f"$year-$month-$day" == "2021-06-10")
   }
+
+  test("map") {
+    val l = Seq(1, 2, 3) map {
+      case 1 => "a"
+      case 2 => "b"
+      case _ => "c"
+    }
+
+    assert(l == Seq("a", "b", "c"))
+  }
+
+  test("enum") {
+    object Abc extends Enumeration {
+      type Abc = Value
+      val A = Value("a")
+      val B = Value("b")
+    }
+
+    val l = Seq(Abc.A, Abc.B) map {
+      case Abc.B => 2
+      case Abc.A => 1
+    }
+
+    assert(l == Seq(1, 2))
+  }
 }
