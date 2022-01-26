@@ -56,7 +56,7 @@ class SyntaxTest extends AnyFunSuite {
     assert(BigInt.apply("123") == 123)
   }
 
-  test("if") {
+  test("if statement") {
     val n = 10
     val t = if (n > 0) "abc" else 10
 
