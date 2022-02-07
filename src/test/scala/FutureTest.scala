@@ -5,15 +5,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.util._
 
-/**
-  * Doc https://docs.scala-lang.org/overviews/core/futures.html
+/** Doc https://docs.scala-lang.org/overviews/core/futures.html
   */
 class FutureTest extends AnyFunSuite {
 
   test("basic for comprehension") {
-    val f = for {
-      r1 <- Future(3)
-    } yield r1
+    val f = for { r1 <- Future(3) } yield r1
 
     assert(Await.result(f, 1.second) == 3)
 
@@ -22,13 +19,11 @@ class FutureTest extends AnyFunSuite {
     assert(Await.result(ff, 1.second) == 3)
   }
 
-  /**
-    * https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
+  /** https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
     */
   test("for comprehension with futures") {
 
-    /**
-      * This runs sequentially.
+    /** This runs sequentially.
       */
     val fsum1 = for {
       r1 <- Future(1)
@@ -41,8 +36,7 @@ class FutureTest extends AnyFunSuite {
     val fsum11 = Future(1).flatMap(r1 => Future(r1 * 2).map(r2 => r1 + r2))
     assert(Await.result(fsum11, 1.second) == 3)
 
-    /**
-      * Parallel solution
+    /** Parallel solution
       */
     val f1 = Future(1)
     val f2 = Future(2)
@@ -63,7 +57,9 @@ class FutureTest extends AnyFunSuite {
     assert(sum == 6)
 
     // the above for-comprehension is equal to
-    val fsum21 = Future(1).flatMap(r1 => Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3)))
+    val fsum21 = Future(1).flatMap(r1 =>
+      Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3))
+    )
     assert(Await.result(fsum21, 1.second) == 6)
   }
 
@@ -87,7 +83,7 @@ class FutureTest extends AnyFunSuite {
           Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3))
         else
           Future(3).map(r3 => r1 + r3)
-        )
+      )
     }
 
     assert(Await.result(condF2(0), 1.second) == 3)
@@ -98,7 +94,7 @@ class FutureTest extends AnyFunSuite {
 
       for {
         r1 <- Future(i)
-        r2 <- if (r1 >0) Future(2) else Future(0)
+        r2 <- if (r1 > 0) Future(2) else Future(0)
         r3 <- Future(3)
       } yield r1 + r2 + r3
     }
@@ -119,14 +115,14 @@ class FutureTest extends AnyFunSuite {
 
     assertThrows[Exception](Await.result(fs2, 1.second))
 
-    val fr1 = fs2.recover {
-      case e: Exception => 0
+    val fr1 = fs2.recover { case e: Exception =>
+      0
     }
 
     assert(Await.result(fr1, 1.second) == 0)
 
-    val fr2 = fs2.recoverWith {
-      case e: Exception => Future(-1)
+    val fr2 = fs2.recoverWith { case e: Exception =>
+      Future(-1)
     }
     assert(Await.result(fr2, 1.second) == -1)
   }
@@ -187,17 +183,24 @@ class FutureTest extends AnyFunSuite {
     val ff = Future.failed(new Exception())
 
     // transform(f: Try[T] => Try[S])
-    val futures: Seq[Future[Try[Int]]] = Seq(f1, f2, ff).map(_.transform(Try(_)))
+    val futures: Seq[Future[Try[Int]]] =
+      Seq(f1, f2, ff).map(_.transform(Try(_)))
     val futureTries: Future[Seq[Try[Int]]] = Future.sequence(futures)
 
     // It's not very easy to flatten Tries
     // https://stackoverflow.com/questions/15495678/flatten-scala-try
-    val failureTries: Future[Seq[Try[Int]]] = futureTries.map(_.filter(_.isFailure))
-    val successeTries: Future[Seq[Try[Int]]] = futureTries.map(_.filter(_.isSuccess))
+    val failureTries: Future[Seq[Try[Int]]] =
+      futureTries.map(_.filter(_.isFailure))
+    val successeTries: Future[Seq[Try[Int]]] =
+      futureTries.map(_.filter(_.isSuccess))
 
     // _.collect() to remove Try
-    val failures: Future[Seq[Throwable]] = futureTries.map(_.collect{case Failure(x) => x})
-    val successes: Future[Seq[Int]] = futureTries.map(_.collect{case Success(x) => x})
+    val failures: Future[Seq[Throwable]] = futureTries.map(_.collect {
+      case Failure(x) => x
+    })
+    val successes: Future[Seq[Int]] = futureTries.map(_.collect {
+      case Success(x) => x
+    })
 
     assert(Await.result(successes, 1.second).sum == 3)
   }
