@@ -35,13 +35,6 @@ libraryDependencies ++= Seq(
   "org.scalatestplus" %% "scalacheck-1-15" % "3.2.9.0" % "test"
 ) ++ circe ++ akka
 
-// https://www.scala-sbt.org/1.x/docs/Howto-Scala.html
-console / initialCommands := """
-  import fpinscala._
-
-  println("fpinscala is imported")
-"""
-
 /**
  * https://www.scala-sbt.org/1.x/docs/Process.html
  */
