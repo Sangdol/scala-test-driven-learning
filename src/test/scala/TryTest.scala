@@ -10,7 +10,7 @@ class TryTest extends AnyFunSuite {
     assert(s1 == s2)
 
     // Call by name
-    val f1 = Try(1/0)
+    val f1 = Try(1 / 0)
     assert(f1.isFailure)
 
     // call by value
@@ -19,7 +19,7 @@ class TryTest extends AnyFunSuite {
   }
 
   test("pattern matching") {
-    val msg = Try(1/0) match {
+    val msg = Try(1 / 0) match {
       case Success(x) => "no way"
       case Failure(e) => e.getMessage
     }
@@ -27,8 +27,18 @@ class TryTest extends AnyFunSuite {
     assert(msg == "/ by zero")
   }
 
+  test("try argument function") {
+    val f: (Try[Int] => String) = {
+      case Success(n) => n.toString
+      case Failure(n) => "Fail"
+    }
+
+    assert(f(Success(1)) == "1")
+    assert(f(Failure(new Exception())) == "Fail")
+  }
+
   test("toEither") {
-    val e = Try(1/0).toEither
+    val e = Try(1 / 0).toEither
 
     assert(e.isLeft)
   }
@@ -36,7 +46,7 @@ class TryTest extends AnyFunSuite {
   test("for-comprehension") {
     val e = for {
       t1 <- Try(0)
-      t2 <- Try(1/t1)
+      t2 <- Try(1 / t1)
     } yield t2
 
     assert(e.isFailure)
@@ -49,7 +59,7 @@ class TryTest extends AnyFunSuite {
   }
 
   test("flatten list") {
-    val s: Seq[Try[Int]] = Seq(Try(1), Try(2), Try(1/0))
+    val s: Seq[Try[Int]] = Seq(Try(1), Try(2), Try(1 / 0))
     val (failures, successes) = s.partitionMap(_.toEither)
 
     assert(successes.sum == 3)
