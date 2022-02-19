@@ -1,22 +1,90 @@
-import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.funsuite.AsyncFunSuite
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+//import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.util._
 
-/** Doc https://docs.scala-lang.org/overviews/core/futures.html
+/**
+  * Futures and Promises
+  * https://docs.scala-lang.org/overviews/core/futures.html
+  *
+  * Scala 3 colorful spec documents
+  * - trait Future https://dotty.epfl.ch/api/scala/concurrent/Future.html
+  * - object Future https://dotty.epfl.ch/api/scala/concurrent/Future$.html
+  *
+  * Asynchronous testing
+  * - https://www.scalatest.org/user_guide/async_testing
   */
-class FutureTest extends AnyFunSuite {
+class FutureTest extends AsyncFunSuite {
+
+  test("foreach") {
+    val ff = Future(1)
+
+    ff.foreach {
+      // This test wouldn't fail even if this assert thorws an exception
+      // since this runs in another thread.
+      case n => assert(n == 1)
+    }
+
+    // This is needed to return Future[Assertion]
+    ff map { n => assert(n == 1) }
+  }
+
+  test("andThen") {
+    val f = Future { 5 }
+
+    f andThen {
+      case r => r
+    } map { r =>
+      assert(r == 5)
+    }
+
+    Future { 5 } andThen {
+      case Success(r) => assert(r == 5)
+    }
+
+    // An exception in the chain is not propagated.
+    Future { 5 } andThen {
+      case r => throw new RuntimeException("hallo")
+    } andThen {
+      case Failure(f) => fail()
+      case Success(s) => assert(s == 5)
+    }
+
+    val pf: PartialFunction[Try[Int], Int] = {
+      case Failure(_) => 10
+      case Success(s) => s
+    }
+
+    Future { 5 } andThen pf map { n =>
+      assert(n == 5)
+    }
+  }
+
+  test("onComplete") {
+    val f = Future { 5 }
+
+    // This test wouldn't fail even if this assert thorws an exception
+    // since this runs in another thread.
+    f onComplete {
+      case Failure(f) => fail()
+      case Success(s) => assert(s == 5)
+    }
+
+    // This is needed to return Future[Assertion]
+    f map { n => assert(n == 5) }
+  }
 
   test("basic for comprehension") {
     val f = for { r1 <- Future(3) } yield r1
 
-    assert(Await.result(f, 1.second) == 3)
+    f map { n => assert(n == 3) }
 
     // the above for-comprehension is equal to
     val ff = Future(3).flatMap(Future(_))
-    assert(Await.result(ff, 1.second) == 3)
+
+    ff map { n => assert(n == 3) }
   }
 
   /** https://stackoverflow.com/questions/19045936/scalas-for-comprehension-with-futures
@@ -30,11 +98,11 @@ class FutureTest extends AnyFunSuite {
       r2 <- Future(r1 * 2)
     } yield r1 + r2
 
-    assert(Await.result(fsum1, 1.second) == 3)
+    fsum1 map { f => assert(f == 3) }
 
     // the above for-comprehension is equal to
     val fsum11 = Future(1).flatMap(r1 => Future(r1 * 2).map(r2 => r1 + r2))
-    assert(Await.result(fsum11, 1.second) == 3)
+    fsum11 map { f => assert(f == 3) }
 
     /** Parallel solution
       */
@@ -48,19 +116,11 @@ class FutureTest extends AnyFunSuite {
       r3 <- f3
     } yield r1 + r2 + r3
 
-    val sum = Await.result(fsum2, 1.second)
-
-    // why this doesn't work?
-    // https://stackoverflow.com/questions/15104536/how-does-20-seconds-work-in-scala
-    //    val sum = Await.result(fsum, 1 second)
-
-    assert(sum == 6)
+    fsum2 map { f => assert(f == 6) }
 
     // the above for-comprehension is equal to
-    val fsum21 = Future(1).flatMap(r1 =>
-      Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3))
-    )
-    assert(Await.result(fsum21, 1.second) == 6)
+    val fsum21 = Future(1).flatMap(r1 => Future(2).flatMap(r2 => Future(3).map(r3 => r1 + r2 + r3)))
+    fsum21 map { f => assert(f == 6) }
   }
 
   test("conditional for comprehension") {
@@ -72,8 +132,8 @@ class FutureTest extends AnyFunSuite {
       } yield r1 + r2
     }
 
-    assert(Await.result(condF1(1), 1.second) == 3)
-    assert(Await.result(condF1(0), 1.second) == 0)
+    condF1(1) map { c => assert(c == 3) }
+    condF1(0) map { c => assert(c == 0) }
 
     // It seems it's not possible to write this with one for comprehension
     // => did it with an additional Future(0) - see condF3.
@@ -86,8 +146,8 @@ class FutureTest extends AnyFunSuite {
       )
     }
 
-    assert(Await.result(condF2(0), 1.second) == 3)
-    assert(Await.result(condF2(1), 1.second) == 6)
+    condF2(0) map { c => assert(c == 3) }
+    condF2(1) map { c => assert(c == 6) }
 
     def condF3(i: Int): Future[Int] = {
       val f = Future(i)
@@ -99,8 +159,8 @@ class FutureTest extends AnyFunSuite {
       } yield r1 + r2 + r3
     }
 
-    assert(Await.result(condF3(0), 1.second) == 3)
-    assert(Await.result(condF3(1), 1.second) == 6)
+    condF3(0) map { c => assert(c == 3) }
+    condF3(1) map { c => assert(c == 6) }
   }
 
   test("sequence and recover") {
@@ -108,23 +168,29 @@ class FutureTest extends AnyFunSuite {
     val f2 = Future(2)
     val fs = Future.sequence(Seq(f1, f2))
 
-    assert(Await.result(fs, 1.second).sum == 3)
+    fs map { f => assert(f.sum == 3) }
 
     val ff = Future.failed(new Exception())
     val fs2 = Future.sequence(Seq(f1, ff))
 
-    assertThrows[Exception](Await.result(fs2, 1.second))
-
-    val fr1 = fs2.recover { case e: Exception =>
-      0
+    // similar to assertThrows
+    recoverToSucceededIf[Exception] {
+      fs2
     }
 
-    assert(Await.result(fr1, 1.second) == 0)
-
-    val fr2 = fs2.recoverWith { case e: Exception =>
-      Future(-1)
+    val fr1 = fs2.recover {
+      case e: Exception =>
+        0
     }
-    assert(Await.result(fr2, 1.second) == -1)
+
+    fr1 map { f => assert(f == 0) }
+
+    val fr2 = fs2.recoverWith {
+      case e: Exception =>
+        Future(-1)
+    }
+
+    fr2 map { f => assert(f == -1) }
   }
 
   test("sequence and failure separation 1") {
@@ -150,7 +216,7 @@ class FutureTest extends AnyFunSuite {
         fsum + ssum
       }
 
-    assert(Await.result(sum, 1.second) == 103)
+    sum map { s => assert(s == 103) }
   }
 
   test("sequence and failure separation 2") {
@@ -173,7 +239,7 @@ class FutureTest extends AnyFunSuite {
         fsum + ssum
       }
 
-    assert(Await.result(sum, 1.second) == 103)
+    sum map { s => assert(s == 103) }
   }
 
   // https://stackoverflow.com/questions/20874186/scala-listfuture-to-futurelist-disregarding-failed-futures
@@ -202,7 +268,7 @@ class FutureTest extends AnyFunSuite {
       case Success(x) => x
     })
 
-    assert(Await.result(successes, 1.second).sum == 3)
+    successes map { fs => assert(fs.sum == 3) }
   }
 
 }
