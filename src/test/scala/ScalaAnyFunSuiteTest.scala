@@ -4,7 +4,7 @@ import org.scalatest.matchers.should.Matchers._
 /**
   * https://www.scalatest.org/scaladoc/3.1.2/org/scalatest/funsuite/AnyFunSuite.html
   */
-class ScalaTestTest extends AnyFunSuite {
+class ScalaAnyFunSuiteTest extends AnyFunSuite {
 
   test("assertResult") {
     val result = 3
