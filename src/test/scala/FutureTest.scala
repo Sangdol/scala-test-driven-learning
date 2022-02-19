@@ -260,6 +260,60 @@ class FutureTest extends AsyncFunSuite {
     fr2 map { f => assert(f == -1) }
   }
 
+  test("transform") {
+    Future(1) transform (n => n.toString, e => e) map { s =>
+      assert(s == "1")
+    }
+
+    recoverToSucceededIf[RuntimeException] {
+      Future { throw new Exception() } transform (n => n, e => new RuntimeException)
+    }
+  }
+
+  test("transform Try") {
+    Future(1) transform {
+      case Success(n) => Success(n * 2)
+      case Failure(e) => Failure(e)
+    } map { n =>
+      assert(n == 2)
+    }
+
+    // This is a bit confusing.
+    // `f` is already Try and the function inside `transform`
+    // returns a wrapped Try that makes `transform` return
+    // a unwrapped Try.
+    //
+    // Refer to the type annotations:
+    //   def transform[S](f: Try[T] => Try[S])(implicit executor: ExecutionContext): Future[S]
+    Future(1).transform(f => Try(f)).map { t =>
+      assert(t == Success(1))
+    }
+
+    Future(1)
+      .transform({
+        case Success(n) => Try(n)
+        case Failure(e) => Try(e)
+      })
+      .map { t =>
+        assert(t == 1)
+      }
+  }
+
+  test("transformWith") {
+    Future(1).transformWith(f => Future(f)).map { t =>
+      assert(t == Success(1))
+    }
+
+    Future(1)
+      .transformWith({
+        case Success(n) => Future(n)
+        case Failure(e) => Future(e)
+      })
+      .map { t =>
+        assert(t == 1)
+      }
+  }
+
   test("sequence and failure separation 1") {
     val f1 = Future(1)
     val f2 = Future(2)
