@@ -82,6 +82,22 @@ class FutureTest extends AsyncFunSuite {
     f map { n => assert(n == 5) }
   }
 
+  test("failed") {
+    val f: Future[Throwable] = Future { throw new Exception("hallo") }.failed
+    f map { e => assert(e.getMessage == "hallo") }
+
+    // Compare this to above
+    recoverToSucceededIf[Exception] {
+      Future { throw new Exception }
+    }
+
+    // `failed` throws NoSuchElementException
+    // if the original future is successful.
+    recoverToSucceededIf[NoSuchElementException] {
+      Future(1).failed
+    }
+  }
+
   test("collect") {
     Future { 5 } collect {
       case n => n * 2
