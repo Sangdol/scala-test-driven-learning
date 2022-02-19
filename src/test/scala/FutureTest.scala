@@ -1,8 +1,6 @@
 import org.scalatest.funsuite.AsyncFunSuite
 
 import scala.concurrent.Future
-//import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
 import scala.util._
 
 /**
@@ -12,9 +10,6 @@ import scala.util._
   * Scala 3 colorful spec documents
   * - trait Future https://dotty.epfl.ch/api/scala/concurrent/Future.html
   * - object Future https://dotty.epfl.ch/api/scala/concurrent/Future$.html
-  *
-  * Asynchronous testing
-  * - https://www.scalatest.org/user_guide/async_testing
   */
 class FutureTest extends AsyncFunSuite {
 
