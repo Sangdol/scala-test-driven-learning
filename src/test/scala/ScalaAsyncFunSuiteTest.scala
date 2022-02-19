@@ -14,7 +14,7 @@ class ScalaAsyncFunSuiteTest extends AsyncFunSuite {
 
   test("recoverToSucceededIf / assertThrows") {
     recoverToSucceededIf[Exception] {
-      Future { new Exception() }
+      Future { throw new Exception }
     }
 
     recoverToSucceededIf[NoSuchElementException] {
@@ -22,6 +22,15 @@ class ScalaAsyncFunSuiteTest extends AsyncFunSuite {
         case x if x > 5 => -x
       }
     }
+  }
+
+  test("recoverToExceptionIF") {
+    // returns Future[IllegalStateException] instead of Future[Assertion]
+    val ex = recoverToExceptionIf[IllegalStateException] {
+      Future { throw new IllegalStateException("hallo") }
+    }
+
+    ex map { e => assert(e.getMessage == "hallo") }
   }
 
 }
