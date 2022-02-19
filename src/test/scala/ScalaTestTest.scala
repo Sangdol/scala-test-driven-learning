@@ -1,6 +1,9 @@
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers._
 
+/**
+  * https://www.scalatest.org/scaladoc/3.1.2/org/scalatest/funsuite/AnyFunSuite.html
+  */
 class ScalaTestTest extends AnyFunSuite {
 
   test("assertResult") {
