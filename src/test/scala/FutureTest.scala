@@ -87,6 +87,20 @@ class FutureTest extends AsyncFunSuite {
     f map { n => assert(n == 5) }
   }
 
+  test("collect") {
+    Future { 5 } collect {
+      case n => n * 2
+    } map { n =>
+      assert(n == 10)
+    }
+
+    recoverToSucceededIf[NoSuchElementException] {
+      Future { 5 } collect {
+        case x if x > 5 => -x
+      }
+    }
+  }
+
   test("basic for comprehension") {
     val f = for { r1 <- Future(3) } yield r1
 
