@@ -25,6 +25,16 @@ class TryTest extends AnyFunSuite {
     }
 
     assert(msg == "/ by zero")
+
+    // exception vs. throw exception
+    Try(new Throwable("no throw")) match {
+      case Success(e) => assert(e.getMessage == "no throw")
+      case Failure(e) => fail()
+    }
+    Try(throw new Throwable("throw")) match {
+      case Success(e) => fail()
+      case Failure(e) => assert(e.getMessage == "throw")
+    }
   }
 
   test("try argument function") {
