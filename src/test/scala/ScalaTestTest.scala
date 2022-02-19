@@ -41,4 +41,8 @@ class ScalaTestTest extends AnyFunSuite {
     assert(c.helloWorld == "hallo world")
   }
 
+  test("fail") {
+    assertThrows[Throwable](fail())
+  }
+
 }
