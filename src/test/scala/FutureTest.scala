@@ -28,6 +28,7 @@ class FutureTest extends AsyncFunSuite {
     }
 
     // This is needed to return Future[Assertion]
+    // since foreach returns Unit.
     ff map { n => assert(n == 1) }
   }
 
@@ -40,17 +41,19 @@ class FutureTest extends AsyncFunSuite {
       assert(r == 5)
     }
 
-    Future { 5 } andThen {
-      case Success(r) => assert(r == 5)
-    }
+    f andThen {
+      case Success(r) => r
+    } map { r => assert(r == 5) }
 
-    // An exception in the chain is not propagated.
-    Future { 5 } andThen {
-      case r => throw new RuntimeException("hallo")
+    f andThen {
+      // An exception in the chain is not propagated.
+      // Not throwing exception here to remove exception log.
+      //case r => throw new RuntimeException("hallo")
+      case Success(r) => r + 1
     } andThen {
-      case Failure(f) => fail()
-      case Success(s) => assert(s == 5)
-    }
+      case Failure(f) => -1
+      case Success(s) => s
+    } map { r => assert(r == 6) }
 
     val pf: PartialFunction[Try[Int], Int] = {
       case Failure(_) => 10
@@ -72,7 +75,15 @@ class FutureTest extends AsyncFunSuite {
       case Success(s) => assert(s == 5)
     }
 
+    val ft: (Try[Int] => Unit) = {
+      case Failure(f) => fail()
+      case Success(s) => assert(s == 5)
+    }
+
+    f onComplete ft
+
     // This is needed to return Future[Assertion]
+    // since onComplete returns Unit.
     f map { n => assert(n == 5) }
   }
 
