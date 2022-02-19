@@ -82,6 +82,20 @@ class FutureTest extends AsyncFunSuite {
     f map { n => assert(n == 5) }
   }
 
+  test("collect") {
+    Future { 5 } collect {
+      case n => n * 2
+    } map { n =>
+      assert(n == 10)
+    }
+
+    recoverToSucceededIf[NoSuchElementException] {
+      Future { 5 } collect {
+        case x if x > 5 => -x
+      }
+    }
+  }
+
   test("failed") {
     val f: Future[Throwable] = Future { throw new Exception("hallo") }.failed
     f map { e => assert(e.getMessage == "hallo") }
@@ -98,17 +112,19 @@ class FutureTest extends AsyncFunSuite {
     }
   }
 
-  test("collect") {
-    Future { 5 } collect {
-      case n => n * 2
-    } map { n =>
-      assert(n == 10)
+  test("fallbackTo") {
+    val f = Future { throw new RuntimeException("hallo") }
+    val g = Future { 5 }
+
+    f fallbackTo g map { n =>
+      assert(n == 5)
     }
 
-    recoverToSucceededIf[NoSuchElementException] {
-      Future { 5 } collect {
-        case x if x > 5 => -x
-      }
+    // `fallbackTo` fallback to the first exception
+    // if the second Future throws an exception.
+    val h = Future { throw new Exception("hallo2") }
+    recoverToSucceededIf[RuntimeException] {
+      f fallbackTo h
     }
   }
 
