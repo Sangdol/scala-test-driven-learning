@@ -13,6 +13,10 @@ class ScalaAsyncFunSuiteTest extends AsyncFunSuite {
   }
 
   test("recoverToSucceededIf / assertThrows") {
+    recoverToSucceededIf[Exception] {
+      Future { new Exception() }
+    }
+
     recoverToSucceededIf[NoSuchElementException] {
       Future { 5 } collect {
         case x if x > 5 => -x
