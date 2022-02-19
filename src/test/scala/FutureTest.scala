@@ -128,6 +128,21 @@ class FutureTest extends AsyncFunSuite {
     }
   }
 
+  test("filter") {
+    val f = Future { 5 }
+
+    f filter { _ % 2 == 1 } map { n =>
+      assert(n == 5)
+    }
+
+    // `filter` throws NoSuchElementException
+    // if the original Future doesn't hold a value
+    // that satisfies the predicate.
+    recoverToSucceededIf[NoSuchElementException] {
+      f filter { _ % 2 == 0 }
+    }
+  }
+
   test("basic for comprehension") {
     val f = for { r1 <- Future(3) } yield r1
 
