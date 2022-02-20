@@ -185,6 +185,12 @@ class FutureTest extends AsyncFunSuite {
     }
   }
 
+  test("fromTry") {
+    Future.fromTry(Try(1)) map { n =>
+      assert(n == 1)
+    }
+  }
+
   test("basic for comprehension") {
     val f = for { r1 <- Future(3) } yield r1
 
