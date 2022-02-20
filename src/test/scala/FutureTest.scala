@@ -110,6 +110,10 @@ class FutureTest extends AsyncFunSuite {
     recoverToSucceededIf[NoSuchElementException] {
       Future(1).failed
     }
+
+    recoverToSucceededIf[RuntimeException] {
+      Future.failed(new RuntimeException)
+    }
   }
 
   test("fallbackTo") {
