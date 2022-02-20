@@ -226,6 +226,15 @@ class FunctionTest extends AnyFunSuite {
     val as = List(1, 2, 3)
     assert(as.filter(_ > 1) == as.filter(a => a > 1))
 
+    // This throws "missing parameter type for expanded function"
+    // since the placeholder syntax replaces the smallest possible
+    // containing expression with a function
+    // https://stackoverflow.com/questions/7627117/scala-underscore-error-missing-parameter-type-for-expanded-function
+    //
+    // assert(as.filter(identity(_.toChar) > '1') == as.filter(a => a > '1'))
+    // =>
+    // assert(as.filter(identity(x => x.toChar) > 1) == as.filter(a => a > 1))
+
     val f = (_: Int) + (_: Int)
     assert(f(2, 3) == 5)
   }
