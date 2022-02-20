@@ -9,19 +9,26 @@ import scala.util._
   * No `main` is needed with `App`.
   * https://www.scala-lang.org/api/2.13.3/scala/App.html
   */
-object FutureMain {
+object FutureMain extends App {
+  println("00: hallo")
 
-  def printAndThrowException(): Unit = {
-    println("hallo")
+  val ff = Future.failed(new RuntimeException())
+  val f1 = Future { println("01"); 1 }
+  val f2 = Future { println("02"); 2 }
 
-    val ff = Future.failed(new Exception())
-    val f1 = Future { println(1); 1 }
-    val f2 = Future { println(2); 2 }
-
-    // This runs all futures but throws an exception.
-    Await.result(Future.sequence(Seq(ff, f1, f2)), 1.second)
-
-    println("bis bald")
+  Future.sequence(Seq(f1, f2)).foreach {
+    case s => println(s"10: $s")
   }
+
+  Future.sequence(Seq(f1, f2, ff)).foreach {
+    case s => println("this won't be printed.")
+  }
+
+  println(20)
+
+  // This runs all futures but throws an exception.
+  //Await.result(Future.sequence(Seq(ff, f1, f2)), 1.second)
+
+  println("99: bis bald")
 
 }
