@@ -440,4 +440,28 @@ class FutureTest extends AsyncFunSuite {
     successes map { fs => assert(fs.sum == 3) }
   }
 
+  test("traverse") {
+    Future.traverse(Seq(1, 2))(n => Future { n * 2 }) map { s =>
+      assert(s == Seq(2, 4))
+    }
+
+    val f1 = Future(1)
+    val f2 = Future(2)
+
+    // the same as `sequence`.
+    Future.traverse(Seq(f1, f2))(identity) map { s =>
+      assert(s == Seq(1, 2))
+    }
+
+    Future.traverse(Seq(f1, f2))(_.map(n => n * 2)) map { s =>
+      assert(s == Seq(2, 4))
+    }
+
+    val ff = Future.failed(new Exception())
+
+    recoverToSucceededIf[Exception] {
+      Future.traverse(Seq(f1, f2, ff))(_.map(n => n * 2))
+    }
+  }
+
 }
