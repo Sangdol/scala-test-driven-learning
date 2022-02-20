@@ -160,6 +160,31 @@ class FutureTest extends AsyncFunSuite {
     }
   }
 
+  test("find") {
+    val f1 = Future { 1 }
+    val ff = Future { throw new RuntimeException }
+    val f2 = Future { 2 }
+
+    // `find` ignores exceptions
+    Future.find(Seq(f1, ff, f2))(_ > 0) map { n =>
+      assert(n == Some(1))
+    }
+  }
+
+  test("firstCompletedOf") {
+    val f1 = Future { 1 }
+    val ff = Future { throw new RuntimeException }
+    val f2 = Future { 2 }
+
+    Future.firstCompletedOf(Seq(f1, ff, f2)) map { n =>
+      assert(n == 1)
+    }
+
+    recoverToSucceededIf[RuntimeException] {
+      Future.firstCompletedOf(Seq(ff, f2))
+    }
+  }
+
   test("basic for comprehension") {
     val f = for { r1 <- Future(3) } yield r1
 
