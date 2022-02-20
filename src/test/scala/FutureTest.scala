@@ -17,7 +17,7 @@ class FutureTest extends AsyncFunSuite {
     val ff = Future(1)
 
     ff.foreach {
-      // This test wouldn't fail even if this assert thorws an exception
+      // This test wouldn't fail even if this assert throws an exception
       // since this runs in another thread.
       case n => assert(n == 1)
     }
@@ -63,7 +63,7 @@ class FutureTest extends AsyncFunSuite {
   test("onComplete") {
     val f = Future { 5 }
 
-    // This test wouldn't fail even if this assert thorws an exception
+    // This test wouldn't fail even if this assert throws an exception
     // since this runs in another thread.
     f onComplete {
       case Failure(f) => fail()
