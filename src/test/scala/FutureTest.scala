@@ -143,6 +143,19 @@ class FutureTest extends AsyncFunSuite {
     }
   }
 
+  test("zip / zipWith") {
+    val f = Future { 5 }
+    val g = Future { "five" }
+
+    f zip g map { t =>
+      assert(t == (5, "five"))
+    }
+
+    f.zipWith(g)((a, b) => Map(a -> b)).map { m =>
+      assert(m == Map(5 -> "five"))
+    }
+  }
+
   test("basic for comprehension") {
     val f = for { r1 <- Future(3) } yield r1
 
