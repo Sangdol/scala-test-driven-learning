@@ -2,6 +2,8 @@ import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util._
 
+// Try is analogous to Either with Success and Failure
+// but Failure always holds a Throwable.
 class TryTest extends AnyFunSuite {
   test("constructors") {
     val s1 = Success(1)
@@ -53,13 +55,40 @@ class TryTest extends AnyFunSuite {
     assert(e.isLeft)
   }
 
-  test("for-comprehension") {
+  test("for-comprehension simple failure") {
     val e = for {
       t1 <- Try(0)
       t2 <- Try(1 / t1)
     } yield t2
 
     assert(e.isFailure)
+  }
+
+  test("for-comprehension") {
+    def positive(i: Int): Try[Int] =
+      Try {
+        assert(i > 0, s"nonpositive number $i")
+        i
+      }
+
+    val s = for {
+      i1 <- positive(2)
+      i2 <- positive(i1 * 2)
+    } yield i1 + i2
+
+    assert(s == Success(6))
+
+    val s2 = for {
+      i1 <- positive(-2)
+      i2 <- positive(i1 * 2)
+    } yield i1 + i2
+
+    assert(s2.isFailure)
+
+    val e = s2 match {
+      case Failure(e) => e
+    }
+    assert(e.getClass.getSimpleName == "TestFailedException")
   }
 
   test("flatten Tries") {

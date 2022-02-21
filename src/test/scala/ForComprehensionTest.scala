@@ -17,7 +17,7 @@ class ForComprehensionTest extends AnyFunSuite {
       s <- List("a", "b")
     } yield s.toUpperCase()
 
-    assert (ss == List("A", "B"))
+    assert(ss == List("A", "B"))
 
     // flatMap
 
@@ -104,110 +104,6 @@ class ForComprehensionTest extends AnyFunSuite {
     } yield i10
 
     assert(list2 == List(11, 12))
-  }
-
-  test("option") {
-    val some = Some(1)
-    val some2 = Some(2)
-
-    val s = for {
-      s1 <- some
-      s2 <- some2
-    } yield s1 + s2
-
-    assert(s == Some(3))
-
-    val s2 = some.flatMap(s1 => some2 map (s2 => s1 + s2))
-
-    assert(s2 == Some(3))
-
-    val some3: Option[Int] = None
-
-    // None makes all result None
-    val sNone = for {
-      s1 <- some
-      s2 <- some2
-      s3 <- some3
-    } yield s1 + s2 + s3
-
-    assert(sNone == None)
-
-    val s2None = some.flatMap(s1 => some2.flatMap(s2 => some3 map (s3 => s1 + s2 + s3)))
-
-    assert(s2None == None)
-
-    // flatten
-    val ss = Seq(some, some2, some3)
-
-    assert(ss.flatten == Seq(1, 2))
-    assert(ss.flatten.sum == 3)
-
-    // flatten is the same as
-    assert(ss.flatMap(s => s) == Seq(1, 2))
-  }
-
-  test("option pattern matching") {
-    // pattern matching
-
-    val results: Seq[Option[Int]] = Vector(Some(10), None, Some(20))
-
-    val filtered = for {
-      Some(r) <- results
-    } yield (r * 2)
-
-    assert(filtered == Seq(20, 40))
-  }
-
-  // Try is analogous to Either with Success and Failure
-  // but Failure always holds a Throwable.
-  test("try") {
-    def positive(i: Int): Try[Int] = Try {
-      assert (i > 0, s"nonpositive number $i")
-      i
-    }
-
-    val s = for {
-      i1 <- positive(2)
-      i2 <- positive(i1 *2)
-    } yield i1 + i2
-
-    assert(s == Success(6))
-
-    val s2 = for {
-      i1 <- positive(-2)
-      i2 <- positive(i1 *2)
-    } yield i1 + i2
-
-    assert(s2.isFailure)
-
-    val e = s2 match {
-      case Failure(e) => e
-    }
-    assert(e.getClass.getSimpleName == "TestFailedException")
-  }
-
-  test("list") {
-    // https://docs.scala-lang.org/tour/for-comprehensions.html
-    val evens =
-      for (ns <- List(1, 2, 3) if ns % 2 == 0)
-        yield ns
-
-    assert(evens == List(2))
-
-    val evensDouble =
-      for {
-        ns <- List(1, 2, 3) if ns % 2 == 0
-        ds = ns * 2
-      } yield ds
-
-    assert(evensDouble == List(4))
-
-    val evensTriple =
-      for {
-        ns <- List(1, 2, 3) if ns % 2 == 0
-      } yield ns * 3
-
-    assert(evensTriple == List(6))
   }
 
 }

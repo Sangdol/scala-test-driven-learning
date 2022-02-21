@@ -22,21 +22,27 @@ class SeqListTest extends AnyFunSuite {
   }
 
   test("groupBy") {
-    assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2) ==
-      Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
+    assert(
+      Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2) ==
+        Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b")))
+    )
 
     // A way to do distinctBy below Scala 2.13.
-    assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2).flatMap(_._2.headOption).toList ==
-      Seq((1, "a"), (2, "b")))
+    assert(
+      Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2).flatMap(_._2.headOption).toList ==
+        Seq((1, "a"), (2, "b"))
+    )
 
-    assert(Seq(Map(1 -> "a"), Map(2 -> "b"), Map(3 -> "a")).flatten.groupBy(_._2) ==
-      Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
+    assert(
+      Seq(Map(1 -> "a"), Map(2 -> "b"), Map(3 -> "a")).flatten.groupBy(_._2) ==
+        Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b")))
+    )
   }
 
   test("collect") {
     // http://allaboutscala.com/tutorials/chapter-8-beginner-tutorial-using-scala-collection-functions/scala-collect-function/
     val s = Seq("a", 1, "b")
-    val ss = s.collect {case str: String => str}
+    val ss = s.collect { case str: String => str }
 
     assert(ss == Seq("a", "b"))
   }
@@ -130,7 +136,7 @@ class SeqListTest extends AnyFunSuite {
 
   test("List Factory") {
     assert(List.fill(2)(3) == List(3, 3))
-    assert(List.fill(2)({ 1 + 2 }) == List(3, 3))
+    assert(List.fill(2) { 1 + 2 } == List(3, 3))
   }
 
   test("fold, unfold") {
@@ -214,6 +220,30 @@ class SeqListTest extends AnyFunSuite {
     assert(
       List(7, 3, 1, 4, 1, 6).span(_ != 1) == (List(7, 3), List(1, 4, 1, 6))
     )
+  }
+
+  test("for-comprehension") {
+    // https://docs.scala-lang.org/tour/for-comprehensions.html
+    val evens =
+      for (ns <- List(1, 2, 3) if ns % 2 == 0)
+        yield ns
+
+    assert(evens == List(2))
+
+    val evensDouble =
+      for {
+        ns <- List(1, 2, 3) if ns % 2 == 0
+        ds = ns * 2
+      } yield ds
+
+    assert(evensDouble == List(4))
+
+    val evensTriple =
+      for {
+        ns <- List(1, 2, 3) if ns % 2 == 0
+      } yield ns * 3
+
+    assert(evensTriple == List(6))
   }
 
 }
