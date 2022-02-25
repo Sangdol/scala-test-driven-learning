@@ -22,7 +22,6 @@ lazy val akka = Seq(
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
 )
 
-// What does ++=, %, %% mean?
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
   "org.mockito" %% "mockito-scala" % "1.13.9" % Test,
@@ -49,7 +48,6 @@ console / initialCommands := """
 /**
  * https://www.scala-sbt.org/1.x/docs/Process.html
  */
-
 import scala.sys.process._
 
 // Definition: constructing a new slot
