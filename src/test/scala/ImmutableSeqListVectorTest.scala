@@ -1,7 +1,6 @@
 import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.immutable.Range.Inclusive
-import scala.collection.mutable.ListBuffer
 
 /**
   * Seq (trait)
@@ -12,7 +11,7 @@ import scala.collection.mutable.ListBuffer
   * Performance Characteristics
   * https://docs.scala-lang.org/overviews/collections-2.13/performance-characteristics.html
   */
-class SeqListVectorTest extends AnyFunSuite {
+class ImmutableSeqListVectorTest extends AnyFunSuite {
 
   test("flatten") {
     // https://alvinalexander.com/scala/how-to-flatten-list-lists-in-scala-with-flatten-method/
@@ -22,21 +21,27 @@ class SeqListVectorTest extends AnyFunSuite {
   }
 
   test("groupBy") {
-    assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2) ==
-      Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
+    assert(
+      Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2) ==
+        Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b")))
+    )
 
     // A way to do distinctBy below Scala 2.13.
-    assert(Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2).flatMap(_._2.headOption).toList ==
-      Seq((1, "a"), (2, "b")))
+    assert(
+      Seq((1, "a"), (2, "b"), (3, "a")).groupBy(_._2).flatMap(_._2.headOption).toList ==
+        Seq((1, "a"), (2, "b"))
+    )
 
-    assert(Seq(Map(1 -> "a"), Map(2 -> "b"), Map(3 -> "a")).flatten.groupBy(_._2) ==
-      Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b"))))
+    assert(
+      Seq(Map(1 -> "a"), Map(2 -> "b"), Map(3 -> "a")).flatten.groupBy(_._2) ==
+        Map("a" -> Seq((1, "a"), (3, "a")), "b" -> Seq((2, "b")))
+    )
   }
 
   test("collect") {
     // http://allaboutscala.com/tutorials/chapter-8-beginner-tutorial-using-scala-collection-functions/scala-collect-function/
     val s = Seq("a", 1, "b")
-    val ss = s.collect {case str: String => str}
+    val ss = s.collect { case str: String => str }
 
     assert(ss == Seq("a", "b"))
   }
@@ -130,7 +135,7 @@ class SeqListVectorTest extends AnyFunSuite {
 
   test("List Factory") {
     assert(List.fill(2)(3) == List(3, 3))
-    assert(List.fill(2)({ 1 + 2 }) == List(3, 3))
+    assert(List.fill(2) { 1 + 2 } == List(3, 3))
   }
 
   test("fold, unfold") {
@@ -188,22 +193,6 @@ class SeqListVectorTest extends AnyFunSuite {
   test("sort") {
     // This uses Java's sort method.
     assert(List(3, 1, 2).sorted == List(1, 2, 3))
-  }
-
-  test("ListBuffer - mutable list") {
-    val lb = ListBuffer[Int]()
-
-    lb += 1
-
-    assert(lb == List(1))
-
-    lb ++= List(2, 3)
-
-    assert(lb == List(1, 2, 3))
-
-    lb --= List(1, 3)
-
-    assert(lb == List(2))
   }
 
   test("span") {
