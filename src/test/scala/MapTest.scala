@@ -129,4 +129,11 @@ class MapTest extends AnyFunSuite {
     // https://stackoverflow.com/questions/40221310/add-tuple-to-map/40222241
     assert(m + (("b", 2)) == Map("a" -> 1, "b" -> 2))
   }
+
+  test("collect") {
+    val m1 = Map("a" -> Some(1), "b" -> None)
+    val n1 = m1.collect { case (a, Some(v)) => (a -> v) }
+
+    assert(n1 == Map("a" -> 1))
+  }
 }
