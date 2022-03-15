@@ -1,5 +1,7 @@
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.util._
+
 class EnumerationTest extends AnyFunSuite {
 
   test("string to enum") {
@@ -66,8 +68,8 @@ class EnumerationTest extends AnyFunSuite {
   }
 
   /**
-   * https://www.scala-lang.org/api/current/scala/Enumeration.html
-   */
+    * https://www.scala-lang.org/api/current/scala/Enumeration.html
+    */
   test("Enum with case class val") {
 
     object Multiple extends Enumeration {
@@ -95,29 +97,56 @@ class EnumerationTest extends AnyFunSuite {
   }
 
   test("Case class as enum") {
+
     /**
-     * https://stackoverflow.com/questions/1898932/case-objects-vs-enumerations-in-scala
-     *
-     * Pros
-     * - Easily extensible (in terms of adding functions)
-     * - Pattern matching and a compiler check for a full specification
-     * - Natural supports multiple arguments
-     *
-     * Cons
-     * - More code to write
-     * - No iterator over all instances
-     * - No withName()
-     */
+      * https://stackoverflow.com/questions/1898932/case-objects-vs-enumerations-in-scala
+      *
+      * Pros
+      * - Easily extensible (in terms of adding functions)
+      * - Pattern matching and a compiler check for a full specification
+      * - Natural supports multiple arguments
+      *
+      * Cons
+      * - More code to write
+      * - No iterator over all instances
+      * - No withName()
+      */
     sealed trait Color { def name: String }
     case object RED extends Color { def name = "red" }
     case object BLUE extends Color { def name = "blue" }
 
     val c: Color = RED
     val a = c match {
-      case RED => "r"
+      case RED  => "r"
       case BLUE => "b"
     }
 
     assert(a == "r")
+  }
+
+  test("option string to option enum") {
+    val red = Some("RED")
+    val black = Some("BLACK")
+
+    object Color extends Enumeration {
+      type Color = Value
+      val RED, BLUE = Value
+    }
+
+    val eRed = red
+      .flatMap { r =>
+        Try(Color.withName(r)).toOption
+      }
+      .getOrElse(None)
+
+    assert(eRed == Color.RED)
+
+    val eBlack = black
+      .flatMap { r =>
+        Try(Color.withName(r)).toOption
+      }
+      .getOrElse(None)
+
+    assert(eBlack == None)
   }
 }
