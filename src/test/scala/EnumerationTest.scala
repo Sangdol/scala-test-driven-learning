@@ -149,4 +149,14 @@ class EnumerationTest extends AnyFunSuite {
 
     assert(eBlack == None)
   }
+
+  test("enum should use its value when it's used in a string") {
+    object Color extends Enumeration {
+      type Color = Value
+      val RED = Value(1, "red")
+      val BLUE = Value(2, "blue")
+    }
+
+    assert(s"${Color.RED}" == "red")
+  }
 }
