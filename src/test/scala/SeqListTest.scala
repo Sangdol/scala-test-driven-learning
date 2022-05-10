@@ -270,4 +270,18 @@ class SeqListTest extends AnyFunSuite {
     )
   }
 
+  test("groupMapReduce: list to key value map") {
+    val l = List(1, 1, 2)
+
+    // Diffiult way
+    assert(
+      l.groupMapReduce(_ * 2)(identity)((a, _) => a) ==
+        Map(2 -> 1, 4 -> 2)
+    )
+
+    // Better way
+    val keyValue = l.map(k => (k * 2, k)).toMap
+    assert(keyValue == Map(2 -> 1, 4 -> 2))
+  }
+
 }
