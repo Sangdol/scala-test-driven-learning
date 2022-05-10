@@ -246,4 +246,28 @@ class SeqListTest extends AnyFunSuite {
     assert(evensTriple == List(6))
   }
 
+  test("groupMap") {
+    val l = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    assert(
+      l.groupMap(_ % 2 == 0)(identity) ==
+        Map(true -> List(2, 4, 6, 8, 10), false -> List(1, 3, 5, 7, 9))
+    )
+  }
+
+  test("groupMapReduce") {
+    val l = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    assert(
+      // def groupMapReduce[K, B](key: A => K)(f: A => B)(reduce: (B, B) => B): Map[K, B]
+      // 1. group by the first argument result
+      // 2. map the second argument result
+      // 3. reduce the mapped results
+      l.groupMapReduce(_ % 2 == 0)(identity)(_ + _) == Map(
+        (false, 25),
+        (true, 30)
+      )
+    )
+  }
+
 }
