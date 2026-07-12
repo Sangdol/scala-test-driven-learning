@@ -1,6 +1,6 @@
 /**
- * https://docs.scala-lang.org/overviews/collections/arrays.html
- */
+  * https://docs.scala-lang.org/overviews/collections/arrays.html
+  */
 
 import org.scalatest.funsuite.AnyFunSuite
 
